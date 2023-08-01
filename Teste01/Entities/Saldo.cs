@@ -4,23 +4,24 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using Teste01.Utils;
 
 namespace Teste01.Entities
 {
     class Saldo
     {
-        public double Sldcota { get; set; }
-        public double Vlcust { get; set; }
+        public decimal Sldcota { get; set; }
+        public decimal Vlcust { get; set; }
 
-        public Saldo(double sldcota, double vlcust)
+        public Saldo(decimal sldcota, decimal vlcust)
         {
             Sldcota = sldcota;
             Vlcust = vlcust;
         }
 
-        public double CustoMedio()
+        public decimal CustoMedio()
         {
-            return Vlcust / Sldcota;
+            return Utils.TruncarValor( Vlcust / Sldcota);
         }
     }
 }

@@ -9,10 +9,10 @@ namespace Teste01.Entities
     class Certificado
     {
         public string Dtlanct { get; set; }
-        public double Qtdcota { get; set; }
-        public double Cotaplic { get; set; }
+        public decimal Qtdcota { get; set; }
+        public decimal Cotaplic { get; set; }
 
-        public Certificado(string dtlanc, double qtdcota, double cotaplic)
+        public Certificado(string dtlanc, decimal qtdcota, decimal cotaplic)
         {
             Dtlanct = dtlanc;
             Qtdcota = qtdcota;

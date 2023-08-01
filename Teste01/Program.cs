@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using Teste01.Entities;
+using Teste01.Utils;
 
 namespace Teste01
 {
@@ -9,8 +10,8 @@ namespace Teste01
     {
         static void Main(string[] args)
         {
-            double cotaresg = 2.1234567;
-            double customedio = 0.0;
+            decimal cotaresg = 2.1234567m;
+            decimal customedio = 0.0m;
             string pathSld = @"C:\Users\fefug_skli85i\Documents\Temp\SLD.csv";
             string pathApl = @"C:\Users\fefug_skli85i\Documents\Temp\APL.csv";
 
@@ -20,8 +21,8 @@ namespace Teste01
                 foreach (string line in linesSld)
                 {
                     string[] fields = line.Split(';');
-                    double sldcota = double.Parse(fields[0], new CultureInfo("pt-BR"));
-                    var vlcust = double.Parse(fields[1], new CultureInfo("pt-BR"));
+                    decimal sldcota = decimal.Parse(fields[0], new CultureInfo("pt-BR"));
+                    var vlcust = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
 
                     Saldo sld = new Saldo(sldcota, vlcust);
 
@@ -44,18 +45,18 @@ namespace Teste01
                 {
                     string[] fields = line.Split(';');
                     string dtlanct = fields[0];
-                    double qtdcota = double.Parse(fields[1], new CultureInfo("pt-BR"));
-                    double cotaplic = double.Parse(fields[2], new CultureInfo("pt-BR"));
+                    decimal qtdcota = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
+                    decimal cotaplic = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
 
                     Certificado cert = new Certificado(dtlanct, qtdcota, cotaplic);
 
                     Console.WriteLine("Data Aplicação     : " + dtlanct);
                     Console.WriteLine("Qtd Cota           : " + qtdcota.ToString("N5", CultureInfo.InvariantCulture));
-                    double rendporcota = cotaresg - customedio;
+                    decimal rendporcota = cotaresg - customedio;
                     Console.WriteLine("Rendimento por cota: " + rendporcota.ToString("N10", CultureInfo.InvariantCulture));
-                    double irporcota = rendporcota * 0.15;
+                    decimal irporcota = rendporcota * 0.15m;
                     Console.WriteLine("IR         por cota: " + irporcota.ToString("N10", CultureInfo.InvariantCulture));
-                    double vlir = cert.Qtdcota * irporcota;
+                    decimal vlir = cert.Qtdcota * irporcota;
                     Console.WriteLine("Valor do IR        : " + vlir.ToString("N2",CultureInfo.InvariantCulture));
                     Console.WriteLine("----------------------------");
                 }
