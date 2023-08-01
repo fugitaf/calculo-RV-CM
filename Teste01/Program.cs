@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using Teste01.Entities;
-using Teste01.Utils;
 
 namespace Teste01
 {
@@ -21,15 +20,18 @@ namespace Teste01
                 foreach (string line in linesSld)
                 {
                     string[] fields = line.Split(';');
-                    decimal sldcota = decimal.Parse(fields[0], new CultureInfo("pt-BR"));
-                    var vlcust = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
+                    if (fields[0] != "SLDCOTA")
+                    {
+                        decimal sldcota = decimal.Parse(fields[0], new CultureInfo("pt-BR"));
+                        var vlcust = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
 
-                    Saldo sld = new Saldo(sldcota, vlcust);
+                        Saldo sld = new Saldo(sldcota, vlcust);
 
-                    customedio = sld.CustoMedio();
+                        customedio = sld.CustoMedio();
 
-                    Console.WriteLine("Custo Médio:" + sld.CustoMedio().ToString("N7", CultureInfo.InvariantCulture));
-                    Console.WriteLine("----------------------------");
+                        Console.WriteLine("Custo Médio:" + sld.CustoMedio().ToString("N7", CultureInfo.InvariantCulture));
+                        Console.WriteLine("----------------------------");
+                    }
                 }
             }
             catch (IOException e)

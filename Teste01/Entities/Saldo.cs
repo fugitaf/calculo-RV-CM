@@ -21,7 +21,7 @@ namespace Teste01.Entities
 
         public decimal CustoMedio()
         {
-            return Utils.TruncarValor( Vlcust / Sldcota);
+            return Utils.Utils.TruncarValor( Vlcust / Sldcota);
         }
     }
 }
