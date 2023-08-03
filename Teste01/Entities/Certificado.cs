@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Teste01.Entities
+namespace Calculo_RV_CM.Entities
 {
     class Certificado
     {
@@ -12,9 +12,9 @@ namespace Teste01.Entities
         public decimal Qtdcota { get; set; }
         public decimal Cotaplic { get; set; }
 
-        public List<Aliquotas> Aliquotas { get; set; }  
+        public List<CalcPorPeriodo> Aliquotas { get; set; }  
 
-        public Certificado(string dtlanc, decimal qtdcota, decimal cotaplic, List<Aliquotas> aliquotas)
+        public Certificado(string dtlanc, decimal qtdcota, decimal cotaplic, List<CalcPorPeriodo> aliquotas)
         {
             Dtlanct = dtlanc;
             Qtdcota = qtdcota;

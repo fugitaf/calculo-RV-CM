@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Teste01.Utils
+namespace Calculo_RV_CM.Utils
 {
     public static class Utils
     {

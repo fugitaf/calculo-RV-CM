@@ -2,9 +2,9 @@
 using System.Globalization;
 using System.IO;
 using System.Collections.Generic;
-using Teste01.Entities;
+using Calculo_RV_CM.Entities;
 
-namespace Teste01
+namespace Calculo_RV_CM
 {
     class Program
     {
@@ -12,7 +12,7 @@ namespace Teste01
         {
             decimal cotaResg = 0.0m;
             decimal custoMedio = 0.0m;
-            List<Aliquotas> listAliq = new List<Aliquotas>();
+            List<CalcPorPeriodo> listAliq = new List<CalcPorPeriodo>();
             string pathSld = @"C:\Users\fefug_skli85i\Documents\Temp\SLD.csv";
             string pathApl = @"C:\Users\fefug_skli85i\Documents\Temp\APL.csv";
             Console.WriteLine("------------------------------------------");
@@ -31,18 +31,18 @@ namespace Teste01
                         
                         for (int i = 3; int.Parse(fields[i]) > 0 && i <= 18; i = i + 3)
                         {
-                            Aliquotas aliquotas = new Aliquotas();
+                            CalcPorPeriodo aliquotas = new CalcPorPeriodo();
                             aliquotas.Ano = int.Parse(fields[i], new CultureInfo("pt-BR"));
                             aliquotas.Aliquota_Ir = decimal.Parse(fields[i + 1], new CultureInfo("pt-BR"));
                             aliquotas.CotacaoFim = decimal.Parse(fields[i + 2], new CultureInfo("pr-BR"));
                             listAliq.Add(aliquotas);
                         }
                         Console.WriteLine("Quantidade de Aliquotas : " + listAliq.Count);
-                        foreach (Aliquotas obj in listAliq)
+                        foreach (CalcPorPeriodo obj in listAliq)
                         {
-                            Console.WriteLine(obj.Ano + " " +
+                            Console.WriteLine(obj.Ano + "  " +
                                 obj.Aliquota_Ir.ToString("N2", CultureInfo.InvariantCulture) +
-                                " " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture));
+                                "  " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture));
                         }
 
                         Saldo sld = new Saldo(sldcota, vlcust, cotaResg);
@@ -73,18 +73,18 @@ namespace Teste01
                         decimal qtdcota = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
                         decimal cotaplic = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
 
-                        List<Aliquotas> listAliqCert = listAliq.FindAll(x => x.Ano >= 2000);
+                        List<CalcPorPeriodo> listAliqCert = listAliq.FindAll(x => x.Ano >= 2000);
 
                         Certificado cert = new Certificado(dtlanct, qtdcota, cotaplic, listAliqCert);
 
 
                         Console.WriteLine("Data Aplicação     : " + dtlanct);
                         Console.WriteLine("Qtd Cota           : " + qtdcota.ToString("N5", CultureInfo.InvariantCulture));
-                        foreach (Aliquotas obj in cert.Aliquotas)
+                        foreach (CalcPorPeriodo obj in cert.Aliquotas)
                         {
-                            Console.WriteLine(obj.Ano + " " +
+                            Console.WriteLine(obj.Ano + "  " +
                                 obj.Aliquota_Ir.ToString("N2", CultureInfo.InvariantCulture) +
-                                " " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture));
+                                "  " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture));
                         }
 
                         decimal rendporcota = cotaResg - custoMedio;

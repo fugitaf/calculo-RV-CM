@@ -14,9 +14,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\fefug_skli85i\\source\\repos\\Teste01\\Teste01\\Teste01.csproj",
-      "projectName": "Teste01",
-      "projectPath": "C:\\Users\\fefug_skli85i\\source\\repos\\Teste01\\Teste01\\Teste01.csproj",
+      "projectUniqueName": "C:\\Users\\fefug_skli85i\\source\\repos\\Teste01\\Teste01\\Calculo_RV_CM.csproj",
+      "projectName": "Calculo_RV_CM",
+      "projectPath": "C:\\Users\\fefug_skli85i\\source\\repos\\Teste01\\Teste01\\Calculo_RV_CM.csproj",
       "packagesPath": "C:\\Users\\fefug_skli85i\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\fefug_skli85i\\source\\repos\\Teste01\\Teste01\\obj\\",
       "projectStyle": "PackageReference",

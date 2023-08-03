@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Teste01.Entities
+namespace Calculo_RV_CM.Entities
 {
-    class Aliquotas
+    class CalcPorPeriodo
     {
         public int Ano { get; set; }
         public decimal Aliquota_Ir { get; set; }
