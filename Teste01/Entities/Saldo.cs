@@ -12,16 +12,18 @@ namespace Teste01.Entities
     {
         public decimal Sldcota { get; set; }
         public decimal Vlcust { get; set; }
+        public decimal CotaResg { get; set; }
 
-        public Saldo(decimal sldcota, decimal vlcust)
+        public Saldo(decimal sldcota, decimal vlcust, decimal cotaResg)
         {
             Sldcota = sldcota;
             Vlcust = vlcust;
+            CotaResg = cotaResg;
         }
 
         public decimal CustoMedio()
         {
-            return Utils.Utils.TruncarValor( Vlcust / Sldcota);
+            return Utils.Utils.TruncarValor( Vlcust / Sldcota, 7);
         }
     }
 }

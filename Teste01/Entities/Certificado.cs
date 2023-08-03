@@ -12,11 +12,14 @@ namespace Teste01.Entities
         public decimal Qtdcota { get; set; }
         public decimal Cotaplic { get; set; }
 
-        public Certificado(string dtlanc, decimal qtdcota, decimal cotaplic)
+        public List<Aliquotas> Aliquotas { get; set; }  
+
+        public Certificado(string dtlanc, decimal qtdcota, decimal cotaplic, List<Aliquotas> aliquotas)
         {
             Dtlanct = dtlanc;
             Qtdcota = qtdcota;
             Cotaplic = cotaplic;
+            Aliquotas = aliquotas;
         }
     }
 }
