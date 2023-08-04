@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace Calculo_RV_CM.Entities
 {
-    class CalcPorPeriodo
+    public class CalcPorPeriodo
     {
+        public string Dtultrib { get; set; }
         public int Ano { get; set; }
         public decimal Aliquota_Ir { get; set; }
         public decimal CotacaoInicial { get; set; }
@@ -20,7 +22,6 @@ namespace Calculo_RV_CM.Entities
         public decimal SaldoPrejReais { get; set; }
         public decimal irCota { get; set; }
         public decimal valorIR { get; set; }
-
     }
 }
 

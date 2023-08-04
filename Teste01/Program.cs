@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using Calculo_RV_CM.Entities;
 using System.IO.Pipes;
+using System.Runtime.ConstrainedExecution;
 
 namespace Calculo_RV_CM
 {
@@ -27,9 +28,9 @@ namespace Calculo_RV_CM
                 foreach (string line in linesSld)
                 {
                     string[] fields = line.Split(';');
-                    if (fields[0] != "SLDCOTA")
+                    if (fields[0] != "SDCOTMVN")
                     {
-                        decimal sldcota = decimal.Parse(fields[0], new CultureInfo("pt-BR"));
+                        decimal sdcotmvn = decimal.Parse(fields[0], new CultureInfo("pt-BR"));
                         decimal vlcust = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
                         cotacaoMaisRecente = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
 
@@ -55,11 +56,11 @@ namespace Calculo_RV_CM
                                 "  " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture));
                         }
 
-                        Saldo sld = new Saldo(sldcota, vlcust, cotacaoMaisRecente);
+                        Saldo sld = new Saldo(sdcotmvn, vlcust, cotacaoMaisRecente);
 
                         custoMedio = sld.CustoMedio();
 
-                        Console.WriteLine("Cotação Mais Recente : " + sld.CotaResg.ToString("N7", CultureInfo.InvariantCulture));
+                        Console.WriteLine("Cotação Mais Recente : " + sld.VlrCota.ToString("N7", CultureInfo.InvariantCulture));
                         Console.WriteLine("Custo Médio          : " + sld.CustoMedio().ToString("N7", CultureInfo.InvariantCulture));
                         Console.WriteLine("------------------------------------------------------------------------");
                     }
@@ -74,10 +75,13 @@ namespace Calculo_RV_CM
             try
             {
                 string[] lines = File.ReadAllLines(pathApl);
+
+                Utils.Utils.GravaCabecalho();
+
                 foreach (string line in lines)
                 {
                     string[] fields = line.Split(';');
-                    if (fields[0] != "DTLANCT")
+                    if (fields[0] != "DTULTRIB")
                     {
                         string dtlanct = fields[0];
                         decimal qtdcota = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
@@ -90,6 +94,8 @@ namespace Calculo_RV_CM
                         Console.WriteLine("Data Aplicação     : " + dtlanct);
                         Console.WriteLine("Qtd Cota           : " + qtdcota.ToString("N5", CultureInfo.InvariantCulture));
 
+                        cert.AtualizaDtlanct();
+
                         cert.AtualizaCotaInicial(custoMedio);
 
                         cert.AtualizaCotaFim(cotacaoMaisRecente);
@@ -101,6 +107,7 @@ namespace Calculo_RV_CM
                         cert.CalcIR();
 
                         Console.WriteLine("Ano   Aliq  Cota Ini   Cota Fim   Rend p/ Cota  IR p/ Cota    Valor IR");
+
                         foreach (CalcPorPeriodo obj in cert.Aliquotas)
                         {
                             Console.WriteLine(obj.Ano + "  " +
@@ -111,6 +118,7 @@ namespace Calculo_RV_CM
                                 "  " + obj.irCota.ToString("N10", CultureInfo.InvariantCulture) +
                                 "  " + obj.valorIR.ToString("N2", CultureInfo.InvariantCulture));
                             valorTotalIR = valorTotalIR + obj.valorIR;
+                            Utils.Utils.GravaCalculo(obj);
                         }
                         decimal valorBruto = cert.ValorBruto(cotacaoMaisRecente);
                         decimal valorIR = cert.ValorIR();

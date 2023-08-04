@@ -7,25 +7,33 @@ using System.Threading.Tasks;
 
 namespace Calculo_RV_CM.Entities
 {
-    class Certificado
+    public class Certificado
     {
-        public string Dtlanct { get; set; }
-        public decimal Qtdcota { get; set; }
+        public string Dtultrib { get; set; }
+        public decimal Sdoctapl { get; set; }
         public decimal Cotaplic { get; set; }
 
         public List<CalcPorPeriodo> Aliquotas { get; set; }
 
-        public Certificado(string dtlanc, decimal qtdcota, decimal cotaplic, List<CalcPorPeriodo> aliquotas)
+        public Certificado(string dtultrib, decimal sdoctapl, decimal cotaplic, List<CalcPorPeriodo> aliquotas)
         {
-            Dtlanct = dtlanc;
-            Qtdcota = qtdcota;
+            Dtultrib = dtultrib;
+            Sdoctapl = sdoctapl;
             Cotaplic = cotaplic;
             Aliquotas = aliquotas;
         }
 
         public decimal ValorBruto(decimal cotacao)
         {
-            return Utils.Utils.TruncarValor(Qtdcota * cotacao);
+            return Utils.Utils.TruncarValor(Sdoctapl * cotacao);
+        }
+
+        public void AtualizaDtlanct()
+        {
+            for (int i = 0; i < Aliquotas.Count; i++)
+            {
+                Aliquotas[i].Dtultrib = Dtultrib;
+            }
         }
 
         public void AtualizaCotaInicial(decimal cotacaoInicial)
@@ -78,7 +86,7 @@ namespace Calculo_RV_CM.Entities
                 }
                 Aliquotas[i].BaseCalcIR = Aliquotas[i].Rendimento + Aliquotas[i].PrejCompensar - Aliquotas[i].PrejCompensado;
                 Aliquotas[i].SaldoPrejCota = saldoPrej;
-                Aliquotas[i].SaldoPrejReais = Utils.Utils.TruncarValor(Aliquotas[i].SaldoPrejCota * Qtdcota, 2);
+                Aliquotas[i].SaldoPrejReais = Utils.Utils.TruncarValor(Aliquotas[i].SaldoPrejCota * Sdoctapl, 2);
             }
         }
 
@@ -87,7 +95,7 @@ namespace Calculo_RV_CM.Entities
             for (int i = 0; i < Aliquotas.Count; i++)
             {
                 Aliquotas[i].irCota = Utils.Utils.TruncarValor(Aliquotas[i].BaseCalcIR * Aliquotas[i].Aliquota_Ir, 10);
-                Aliquotas[i].valorIR = Utils.Utils.TruncarValor(Qtdcota * Aliquotas[i].irCota, 2);
+                Aliquotas[i].valorIR = Utils.Utils.TruncarValor(Sdoctapl * Aliquotas[i].irCota, 2);
             }
         }
 

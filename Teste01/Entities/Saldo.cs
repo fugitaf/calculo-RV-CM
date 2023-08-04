@@ -8,22 +8,22 @@ using Calculo_RV_CM.Utils;
 
 namespace Calculo_RV_CM.Entities
 {
-    class Saldo
+    public class Saldo
     {
-        public decimal Sldcota { get; set; }
+        public decimal Sdcotmvn { get; set; }
         public decimal Vlcust { get; set; }
-        public decimal CotaResg { get; set; }
+        public decimal VlrCota { get; set; }
 
-        public Saldo(decimal sldcota, decimal vlcust, decimal cotaResg)
+        public Saldo(decimal sdcotamvn, decimal vlcust, decimal vlrcota)
         {
-            Sldcota = sldcota;
+            Sdcotmvn = sdcotamvn;
             Vlcust = vlcust;
-            CotaResg = cotaResg;
+            VlrCota = vlrcota;
         }
 
         public decimal CustoMedio()
         {
-            return Utils.Utils.TruncarValor( Vlcust / Sldcota, 7);
+            return Utils.Utils.TruncarValor( Vlcust / Sdcotmvn, 7);
         }
     }
 }
