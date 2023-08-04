@@ -12,5 +12,11 @@ namespace Calculo_RV_CM.Utils
         {
             return decimal.Round(valor, precisao, metodoTruncar);
         }
+
+        public static int Ano(string dtlanct)
+        {
+            return int.Parse(dtlanct.Substring(6));
+        }
+
     }
 }
