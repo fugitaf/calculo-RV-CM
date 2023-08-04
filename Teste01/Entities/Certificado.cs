@@ -65,23 +65,27 @@ namespace Calculo_RV_CM.Entities
 
             for (int i = 0; i < Aliquotas.Count; i++)
             {
+                Aliquotas[i].PrejCompensar = 0.0m;
+                Aliquotas[i].PrejCompensado = 0.0m;
                 if (Aliquotas[i].Rendimento < 0)
                 {
                     Aliquotas[i].PrejCompensar = Aliquotas[i].Rendimento * -1;
                     saldoPrej = saldoPrej + Aliquotas[i].PrejCompensar;
                 }
                 else
-                if (saldoPrej > 0)
                 {
-                    if (saldoPrej > Aliquotas[i].Rendimento)
+                    if (saldoPrej > 0)
                     {
-                        Aliquotas[i].PrejCompensado = Aliquotas[i].Rendimento;
-                        saldoPrej = saldoPrej - Aliquotas[i].PrejCompensado;
-                    }
-                    else
-                    {
-                        Aliquotas[i].PrejCompensado = Aliquotas[i].Rendimento - saldoPrej;
-                        saldoPrej = 0.0m;
+                        if (saldoPrej > Aliquotas[i].Rendimento)
+                        {
+                            Aliquotas[i].PrejCompensado = Aliquotas[i].Rendimento;
+                            saldoPrej = saldoPrej - Aliquotas[i].PrejCompensado;
+                        }
+                        else
+                        {
+                            Aliquotas[i].PrejCompensado = saldoPrej;
+                            saldoPrej = 0.0m;
+                        }
                     }
                 }
                 Aliquotas[i].BaseCalcIR = Aliquotas[i].Rendimento + Aliquotas[i].PrejCompensar - Aliquotas[i].PrejCompensado;
