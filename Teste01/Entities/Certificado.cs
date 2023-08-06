@@ -13,14 +13,14 @@ namespace Calculo_RV_CM.Entities
         public decimal Sdoctapl { get; set; }
         public decimal Cotaplic { get; set; }
 
-        public List<CalcPorPeriodo> Aliquotas { get; set; }
+        public List<Periodos> PeriodoCalc { get; set; }
 
-        public Certificado(string dtultrib, decimal sdoctapl, decimal cotaplic, List<CalcPorPeriodo> aliquotas)
+        public Certificado(string dtultrib, decimal sdoctapl, decimal cotaplic, List<Periodos> periodoCalc)
         {
             Dtultrib = dtultrib;
             Sdoctapl = sdoctapl;
             Cotaplic = cotaplic;
-            Aliquotas = aliquotas;
+            PeriodoCalc = periodoCalc;
         }
 
         public decimal ValorBruto(decimal cotacao)
@@ -30,32 +30,32 @@ namespace Calculo_RV_CM.Entities
 
         public void AtualizaDtlanct()
         {
-            for (int i = 0; i < Aliquotas.Count; i++)
+            for (int i = 0; i < PeriodoCalc.Count; i++)
             {
-                Aliquotas[i].Dtultrib = Dtultrib;
+                PeriodoCalc[i].Dtultrib = Dtultrib;
             }
         }
 
         public void AtualizaCotaInicial(decimal cotacaoInicial)
         {
-            Aliquotas[0].CotacaoInicial = cotacaoInicial;
+            PeriodoCalc[0].CotacaoInicial = cotacaoInicial;
 
-            for (int i = 1; i < Aliquotas.Count; i++)
+            for (int i = 1; i < PeriodoCalc.Count; i++)
             {
-                Aliquotas[i].CotacaoInicial = Aliquotas[i - 1].CotacaoFim;
+                PeriodoCalc[i].CotacaoInicial = PeriodoCalc[i - 1].CotacaoFim;
             }
         }
 
         public void AtualizaCotaFim(decimal cotacaoFim)
         {
-            Aliquotas[Aliquotas.Count - 1].CotacaoFim = cotacaoFim;
+            PeriodoCalc[PeriodoCalc.Count - 1].CotacaoFim = cotacaoFim;
         }
 
         public void CalcRendimento()
         {
-            for (int i = 0; i < Aliquotas.Count; i++)
+            for (int i = 0; i < PeriodoCalc.Count; i++)
             {
-                Aliquotas[i].Rendimento = Aliquotas[i].CotacaoFim - Aliquotas[i].CotacaoInicial;
+                PeriodoCalc[i].Rendimento = PeriodoCalc[i].CotacaoFim - PeriodoCalc[i].CotacaoInicial;
             }
         }
 
@@ -63,52 +63,52 @@ namespace Calculo_RV_CM.Entities
         {
             decimal saldoPrej = 0.0m;
 
-            for (int i = 0; i < Aliquotas.Count; i++)
+            for (int i = 0; i < PeriodoCalc.Count; i++)
             {
-                Aliquotas[i].PrejCompensar = 0.0m;
-                Aliquotas[i].PrejCompensado = 0.0m;
-                if (Aliquotas[i].Rendimento < 0)
+                PeriodoCalc[i].PrejACompensar = 0.0m;
+                PeriodoCalc[i].PrejCompensado = 0.0m;
+                if (PeriodoCalc[i].Rendimento < 0)
                 {
-                    Aliquotas[i].PrejCompensar = Aliquotas[i].Rendimento * -1;
-                    saldoPrej = saldoPrej + Aliquotas[i].PrejCompensar;
+                    PeriodoCalc[i].PrejACompensar = PeriodoCalc[i].Rendimento * -1;
+                    saldoPrej = saldoPrej + PeriodoCalc[i].PrejACompensar;
                 }
                 else
                 {
                     if (saldoPrej > 0)
                     {
-                        if (saldoPrej > Aliquotas[i].Rendimento)
+                        if (saldoPrej > PeriodoCalc[i].Rendimento)
                         {
-                            Aliquotas[i].PrejCompensado = Aliquotas[i].Rendimento;
-                            saldoPrej = saldoPrej - Aliquotas[i].PrejCompensado;
+                            PeriodoCalc[i].PrejCompensado = PeriodoCalc[i].Rendimento;
+                            saldoPrej = saldoPrej - PeriodoCalc[i].PrejCompensado;
                         }
                         else
                         {
-                            Aliquotas[i].PrejCompensado = saldoPrej;
+                            PeriodoCalc[i].PrejCompensado = saldoPrej;
                             saldoPrej = 0.0m;
                         }
                     }
                 }
-                Aliquotas[i].BaseCalcIR = Aliquotas[i].Rendimento + Aliquotas[i].PrejCompensar - Aliquotas[i].PrejCompensado;
-                Aliquotas[i].SaldoPrejCota = saldoPrej;
-                Aliquotas[i].SaldoPrejReais = Utils.Utils.TruncarValor(Aliquotas[i].SaldoPrejCota * Sdoctapl, 2);
+                PeriodoCalc[i].BaseCalcIR = PeriodoCalc[i].Rendimento + PeriodoCalc[i].PrejACompensar - PeriodoCalc[i].PrejCompensado;
+                PeriodoCalc[i].SaldoPrejCota = saldoPrej;
+                PeriodoCalc[i].SaldoPrejReais = Utils.Utils.TruncarValor(PeriodoCalc[i].SaldoPrejCota * Sdoctapl, 2);
             }
         }
 
         public void CalcIR()
         {
-            for (int i = 0; i < Aliquotas.Count; i++)
+            for (int i = 0; i < PeriodoCalc.Count; i++)
             {
-                Aliquotas[i].irCota = Utils.Utils.TruncarValor(Aliquotas[i].BaseCalcIR * Aliquotas[i].Aliquota_Ir, 10);
-                Aliquotas[i].valorIR = Utils.Utils.TruncarValor(Sdoctapl * Aliquotas[i].irCota, 2);
+                PeriodoCalc[i].IR = Utils.Utils.TruncarValor(PeriodoCalc[i].BaseCalcIR * PeriodoCalc[i].Aliquota_Ir, 10);
+                PeriodoCalc[i].ValorIR = Utils.Utils.TruncarValor(Sdoctapl * PeriodoCalc[i].IR, 2);
             }
         }
 
         public decimal ValorIR()
         {
             decimal valorIR = 0.0m;
-            for (int i = 0; i < Aliquotas.Count; i++)
+            for (int i = 0; i < PeriodoCalc.Count; i++)
             {
-                valorIR = valorIR + Aliquotas[i].valorIR;
+                valorIR = valorIR + PeriodoCalc[i].IR;
             }
             return valorIR;
         }

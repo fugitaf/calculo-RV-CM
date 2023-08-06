@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Calculo_RV_CM.Entities;
 using System.IO.Pipes;
 using System.Runtime.ConstrainedExecution;
+using Microsoft.VisualBasic;
 
 namespace Calculo_RV_CM
 {
@@ -17,10 +18,15 @@ namespace Calculo_RV_CM
             decimal valorTotalBruto = 0.0m;
             decimal valorTotalIR = 0.0m;
             decimal valorTotalLiquido = 0.0m;
-            List<CalcPorPeriodo> listAliq = new List<CalcPorPeriodo>();
+            List<AliquotasIR> listAliquotasIR = new List<AliquotasIR>();
             string pathSld = @"C:\Users\fefug_skli85i\Documents\Temp\SLD.csv";
             string pathApl = @"C:\Users\fefug_skli85i\Documents\Temp\APL.csv";
             Console.WriteLine("------------------------------------------------------------------------");
+
+            
+            //
+            // Obter informações do Arquivo SLD.CSV
+            //
 
             try
             {
@@ -36,23 +42,18 @@ namespace Calculo_RV_CM
 
                         for (int i = 3; int.Parse(fields[i]) > 0 && i <= 18; i = i + 3)
                         {
-                            CalcPorPeriodo aliquotas = new CalcPorPeriodo();
-                            aliquotas.Ano = int.Parse(fields[i], new CultureInfo("pt-BR"));
-                            aliquotas.Aliquota_Ir = decimal.Parse(fields[i + 1], new CultureInfo("pt-BR"));
-                            aliquotas.CotacaoFim = decimal.Parse(fields[i + 2], new CultureInfo("pr-BR"));
-                            aliquotas.Rendimento = 0.0m;
-                            aliquotas.PrejCompensar = 0.0m;
-                            aliquotas.PrejCompensado = 0.0m;
-                            aliquotas.SaldoPrejCota = 0.0m;
-                            aliquotas.BaseCalcIR = 0.0m;
-                            aliquotas.SaldoPrejReais = 0.0m;
-                            listAliq.Add(aliquotas);
+                            AliquotasIR aliqIR = new AliquotasIR();
+                            aliqIR.Ano = int.Parse(fields[i], new CultureInfo("pt-BR"));
+                            aliqIR.AliquotaIR = decimal.Parse(fields[i + 1], new CultureInfo("pt-BR"));
+                            aliqIR.CotacaoFim = decimal.Parse(fields[i + 2], new CultureInfo("pr-BR"));
+                            listAliquotasIR.Add(aliqIR);
                         }
+                        
                         Console.WriteLine("Aliquotas de IR do SLD");
-                        foreach (CalcPorPeriodo obj in listAliq)
+                        foreach (AliquotasIR obj in listAliquotasIR)
                         {
                             Console.WriteLine(obj.Ano + "  " +
-                                obj.Aliquota_Ir.ToString("N2", CultureInfo.InvariantCulture) +
+                                obj.AliquotaIR.ToString("N2", CultureInfo.InvariantCulture) +
                                 "  " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture));
                         }
 
@@ -72,6 +73,10 @@ namespace Calculo_RV_CM
                 Console.WriteLine(e.Message);
             }
 
+            //
+            // Obter informações do Arquivo APL.CSV
+            //
+
             try
             {
                 string[] lines = File.ReadAllLines(pathApl);
@@ -83,15 +88,36 @@ namespace Calculo_RV_CM
                     string[] fields = line.Split(';');
                     if (fields[0] != "DTULTRIB")
                     {
-                        string dtlanct = fields[0];
+                        string dtultrib = fields[0];
                         decimal qtdcota = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
                         decimal cotaplic = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
 
-                        List<CalcPorPeriodo> listCalcPorPeriodo = listAliq.FindAll(x => x.Ano >= Utils.Utils.Ano(dtlanct));
+                        List<AliquotasIR> aliqIRCert = listAliquotasIR.FindAll(x => x.Ano >= Utils.Utils.Ano(dtultrib));    
 
-                        Certificado cert = new Certificado(dtlanct, qtdcota, cotaplic, listCalcPorPeriodo);
+                        List<Periodos> listCalcPorPeriodo = new List<Periodos>();
 
-                        Console.WriteLine("Data Aplicação     : " + dtlanct);
+                        foreach (AliquotasIR Obj in aliqIRCert)
+                        {
+                            Periodos periodo = new Periodos();
+                            periodo.Dtultrib = dtultrib;
+                            periodo.Ano = Obj.Ano;
+                            periodo.Aliquota_Ir = Obj.AliquotaIR;
+                            periodo.CotacaoInicial = 0.0m;
+                            periodo.CotacaoFim = Obj.CotacaoFim;
+                            periodo.Rendimento = 0.0m;
+                            periodo.PrejACompensar = 0.0m;
+                            periodo.PrejCompensado = 0.0m;
+                            periodo.SaldoPrejCota = 0.0m;
+                            periodo.BaseCalcIR = 0.0m;
+                            periodo.SaldoPrejReais = 0.0m;
+                            periodo.IR = 0.0m;
+                            periodo.ValorIR = 0.0m;
+                            listCalcPorPeriodo.Add(periodo);
+                        }
+
+                        Certificado cert = new Certificado(dtultrib, qtdcota, cotaplic, listCalcPorPeriodo);
+
+                        Console.WriteLine("Data Aplicação     : " + dtultrib);
                         Console.WriteLine("Qtd Cota           : " + qtdcota.ToString("N5", CultureInfo.InvariantCulture));
 
                         cert.AtualizaDtlanct();
@@ -108,16 +134,16 @@ namespace Calculo_RV_CM
 
                         Console.WriteLine("Ano   Aliq  Cota Ini   Cota Fim   Rend p/ Cota  IR p/ Cota    Valor IR");
 
-                        foreach (CalcPorPeriodo obj in cert.Aliquotas)
+                        foreach (Periodos obj in cert.PeriodoCalc)
                         {
                             Console.WriteLine(obj.Ano + "  " +
                                 obj.Aliquota_Ir.ToString("N2", CultureInfo.InvariantCulture) +
                                 "  " + obj.CotacaoInicial.ToString("N7", CultureInfo.InvariantCulture) +
                                 "  " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture) +
                                 "  " + obj.Rendimento.ToString("N10", CultureInfo.InvariantCulture) +
-                                "  " + obj.irCota.ToString("N10", CultureInfo.InvariantCulture) +
-                                "  " + obj.valorIR.ToString("N2", CultureInfo.InvariantCulture));
-                            valorTotalIR = valorTotalIR + obj.valorIR;
+                                "  " + obj.IR.ToString("N10", CultureInfo.InvariantCulture) +
+                                "  " + obj.ValorIR.ToString("N2", CultureInfo.InvariantCulture));
+                            valorTotalIR = valorTotalIR + obj.ValorIR;
                             Utils.Utils.GravaCalculo(obj);
                         }
                         decimal valorBruto = cert.ValorBruto(cotacaoMaisRecente);
