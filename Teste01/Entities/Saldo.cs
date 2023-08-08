@@ -14,13 +14,17 @@ namespace Calculo_RV_CM.Entities
         public decimal Vlcust { get; set; }
         public decimal VlrCota { get; set; }
         public decimal SaldoPrejuizo { get; set; }
+        public decimal VlrBloq { get; set; }
+        public decimal CotBloq { get; set; }
 
-        public Saldo(decimal sdcotamvn, decimal vlcust, decimal vlrcota, decimal saldoPrejuizo)
+        public Saldo(decimal sdcotamvn, decimal vlcust, decimal vlrcota, decimal saldoPrejuizo, decimal vlrbloq, decimal cotbloq)
         {
             Sdcotmvn = sdcotamvn;
             Vlcust = vlcust;
             VlrCota = vlrcota;
             SaldoPrejuizo = saldoPrejuizo;  
+            VlrBloq = vlrbloq;
+            CotBloq = cotbloq;
         }
 
         public decimal CustoMedio()

@@ -94,7 +94,7 @@ namespace Calculo_RV_CM.Utils
         //
         // Compensação de Prejuízo entre Certificados
         //
-        public static List<Certificado> CalcCertificado(List<Certificado> certificados, decimal saldoPrejTotal)
+        public static List<Certificado> CalcCertificado(List<Certificado> certificados, decimal saldoPrejTotal, decimal cotacaoMaisRecente, decimal cotBloq)
         {
             for (int i = 0; i < certificados.Count; i++)
             {
@@ -168,13 +168,57 @@ namespace Calculo_RV_CM.Utils
                 // Calcula Novo Saldo de Prejuízo
                 //
 
-                saldoPrejTotal = saldoPrejTotal - certificados[1].VlrPrejCompensado;
+                saldoPrejTotal = saldoPrejTotal - certificados[i].VlrPrejCompensado;
                 certificados[i].SaldoPrejuizo = saldoPrejTotal;
+
+                //
+                // Calcula Cota Liquida Tributada
+                //
+
+                certificados[i].CotaLiqTrib = cotacaoMaisRecente - certificados[i].IRCota;
+
+                //
+                // Calcula Valor Bruto
+                //
+
+                certificados[i].VlrBruto = Utils.TruncarValor(certificados[i].Sdoctapl * cotacaoMaisRecente, 2);
 
                 //
                 // Calcula o Valor do IR
                 //
-                certificados[i].IR = Utils.TruncarValor(certificados[i].CotasTributada * certificados[i].IRCota, 2);
+                certificados[i].VlrIR = Utils.TruncarValor(certificados[i].CotasTributada * certificados[i].IRCota, 2);
+
+                //
+                // Calcula Valor Liquido
+                //
+
+                certificados[i].VlrLiquido = certificados[i].VlrBruto - certificados[i].VlrIR;
+
+            }
+
+            //
+            // Calcula Valor do Bloqueio em Cotas
+            //
+
+            for (int i2 = certificados.Count - 1; i2 >= 0 && cotBloq > 0; i2--)
+            {
+                decimal cotasLivres = 0.0m;
+                decimal vlrLiqLivre = 0.0m;
+
+                if (certificados[i2].Sdoctapl > cotBloq)
+                {
+                    cotasLivres = certificados[i2].Sdoctapl - cotBloq;
+                    cotBloq = 0.0m;
+                }
+                else
+                {
+                    cotasLivres = 0.0m;
+                    cotBloq = cotBloq - certificados[i2].Sdoctapl;
+                }
+
+                vlrLiqLivre = Utils.TruncarValor(cotasLivres * certificados[i2].CotaLiqTrib, 2);
+
+                certificados[i2].VlrBloqCotas = certificados[i2].VlrLiquido - vlrLiqLivre;
             }
 
             return certificados;
@@ -183,15 +227,16 @@ namespace Calculo_RV_CM.Utils
         public static void CabecalhoPeriodos()
         {
             Utils.GravaRegistro(" ");
-            string registro = " ; ;" + "Ano;" + "Aliquota_Ir;" +
+            string registro = "*** Periodos ***; Dtultrib;" + "Ano;" + "Aliquota_Ir;" +
                 "Cotacao_Inicial;" + "Cotacao_Fim;" + "Rendimento;" + "Prej_A_Compensar;" +
                 "Prej_Compensado;" + "Saldo_Prej_Cota;" + "Base_Calc_IR;" + "IR_Cota;" + "Saldo_Prej_Reais";
             Utils.GravaRegistro(registro);
         }
 
-        public static void GravaPeriodos(Periodos calcPorPeriodo)
+        public static void GravaPeriodos(string dtultrib, Periodos calcPorPeriodo)
         {
-            string registro = " ; ;" +
+            string registro = ";" +
+                dtultrib + ";" +
                 calcPorPeriodo.Ano + ";" +
                 calcPorPeriodo.Aliquota_Ir.ToString("N2", new CultureInfo("pt-BR")) + ";" +
                 calcPorPeriodo.CotacaoInicial.ToString("N7", new CultureInfo("pt-BR")) + ";" +
@@ -209,17 +254,18 @@ namespace Calculo_RV_CM.Utils
         public static void CabecalhoCertificados()
         {
             Utils.GravaRegistro(" ");
-            string registro = "Dtultrib;" + "Sdoctapl;" + "Cotaplic;" +
+            string registro = "*** Certificados ***;" + "Dtultrib;" + "Sdoctapl;" + "Cotaplic;" +
                 "RendCertificado;" + "SaldoPrejuizo;" + "CotasIsentaMax;" +
                 "CotasIsenta;" + "CotasTributada;" + "VlrPrejCompensado;" +
-                "VlrPrejCertificado;" + "IRCota;" + "IR;";
+                "VlrPrejCertificado;" + "IRCota;" + "CotaLiquTrib;" +
+                "ValorBruto;" + "IR;" + "ValorLiquido;" + "ValorBloqCotas";
             Utils.GravaRegistro(registro);
 
         }
 
         public static void GravaCertificados(Certificado cert)
         {
-            string registro =
+            string registro = ";" +
                 cert.Dtultrib + ";" +
                 cert.Sdoctapl.ToString("N5", new CultureInfo("pt-BR")) + ";" +
                 cert.Cotaplic.ToString("N7", new CultureInfo("pt-BR")) + ";" +
@@ -231,7 +277,11 @@ namespace Calculo_RV_CM.Utils
                 cert.VlrPrejCompensado.ToString("N2", new CultureInfo("pt-BR")) + ";" +
                 cert.VlrPrejCertificado.ToString("N2", new CultureInfo("pt-BR")) + ";" +
                 cert.IRCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                cert.IR.ToString("N2", new CultureInfo("pt-BR"));
+                cert.CotaLiqTrib.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                cert.VlrBruto.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                cert.VlrIR.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                cert.VlrLiquido.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                cert.VlrBloqCotas.ToString("N2", new CultureInfo("pt-BR"));
             Utils.GravaRegistro(registro);
         }
 

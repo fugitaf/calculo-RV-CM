@@ -20,7 +20,11 @@ namespace Calculo_RV_CM.Entities
         public decimal VlrPrejCompensado { get; set; }
         public decimal VlrPrejCertificado { get; set; }
         public decimal IRCota { get; set; }
-        public decimal IR { get; set; }
+        public decimal CotaLiqTrib { get; set; }
+        public decimal VlrBruto { get; set; }
+        public decimal VlrIR { get; set; }
+        public decimal VlrLiquido { get; set; }
+        public decimal VlrBloqCotas { get; set; }
         public List<Periodos> PeriodoCalc { get; set; }
     }
 }
