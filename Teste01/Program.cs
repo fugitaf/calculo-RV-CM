@@ -16,13 +16,14 @@ namespace Calculo_RV_CM
         {
             decimal cotacaoMaisRecente = 0.0m;
             decimal saldoPrejuizo = 0.0m;
-            decimal vlrBloq = 0.0m;
-            decimal cotBloq = 0.0m;
+            decimal valorBloqueadoTotal = 0.0m;
+            decimal cotasBloqueadasTotal = 0.0m;
             decimal custoMedio = 0.0m;
             decimal saldoBruto = 0.0m;
             decimal valorIR = 0.0m;
             decimal saldoLiquido = 0.0m;
             decimal saldoBloqueado = 0.0m;
+            decimal custoAplicacao = 0.0m;
             List<AliquotasIR> listAliquotasIR = new List<AliquotasIR>();
             List<Certificado> listCert = new List<Certificado>();
             string pathSld = @"C:\Users\fefug_skli85i\Documents\Temp\SLD.csv";
@@ -41,20 +42,20 @@ namespace Calculo_RV_CM
                     string[] fields = line.Split(';');
                     if (fields[0] != "SDCOTMVN")
                     {
-                        decimal sdcotmvn = decimal.Parse(fields[0], new CultureInfo("pt-BR"));
-                        decimal vlcust = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
+                        decimal saldoCotasSubconta = decimal.Parse(fields[0], new CultureInfo("pt-BR"));
+                        decimal valorCustoMedio = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
                         cotacaoMaisRecente = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
                         saldoPrejuizo = decimal.Parse(fields[3], new CultureInfo("pt-BR"));
-                        vlrBloq = decimal.Parse(fields[4], new CultureInfo("pt-BR"));
-                        cotBloq = decimal.Parse(fields[5], new CultureInfo("pt-BR"));
+                        valorBloqueadoTotal = decimal.Parse(fields[4], new CultureInfo("pt-BR"));
+                        cotasBloqueadasTotal = decimal.Parse(fields[5], new CultureInfo("pt-BR"));
 
-                        for (int i = 6; i <= 21 && int.Parse(fields[i]) > 0; i = i + 3)
+                        for (int i = 6; i <= 21 && int.Parse(fields[i]) > 0; i += 3)
                         {
-                            AliquotasIR aliqIR = new AliquotasIR();
-                            aliqIR.Ano = int.Parse(fields[i], new CultureInfo("pt-BR"));
-                            aliqIR.AliquotaIR = decimal.Parse(fields[i + 1], new CultureInfo("pt-BR"));
-                            aliqIR.CotacaoFim = decimal.Parse(fields[i + 2], new CultureInfo("pr-BR"));
-                            listAliquotasIR.Add(aliqIR);
+                            AliquotasIR aliquotasIR = new AliquotasIR();
+                            aliquotasIR.Ano = int.Parse(fields[i], new CultureInfo("pt-BR"));
+                            aliquotasIR.AliquotaIR = decimal.Parse(fields[i + 1], new CultureInfo("pt-BR"));
+                            aliquotasIR.CotacaoFim = decimal.Parse(fields[i + 2], new CultureInfo("pr-BR"));
+                            listAliquotasIR.Add(aliquotasIR);
                         }
 
                         Console.WriteLine("Aliquotas de IR do SLD");
@@ -65,22 +66,22 @@ namespace Calculo_RV_CM
                                 "  " + obj.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture));
                         }
 
-                        Saldo sld = new Saldo(sdcotmvn, vlcust, cotacaoMaisRecente, saldoPrejuizo, vlrBloq, cotBloq);
+                        Saldo sld = new Saldo(saldoCotasSubconta, valorCustoMedio, cotacaoMaisRecente, saldoPrejuizo, valorBloqueadoTotal, cotasBloqueadasTotal);
 
                         custoMedio = sld.CustoMedio();
 
-                        Console.WriteLine("Cotação Mais Recente : " + sld.VlrCota.ToString("N7", CultureInfo.InvariantCulture));
+                        Console.WriteLine("Cotação Mais Recente : " + sld.CotacaoMaisRecente.ToString("N7", CultureInfo.InvariantCulture));
                         Console.WriteLine("Custo Médio          : " + sld.CustoMedio().ToString("N7", CultureInfo.InvariantCulture));
                         Console.WriteLine("Saldo Prejuizo       : " + sld.SaldoPrejuizo.ToString("N2", CultureInfo.InvariantCulture));
-                        Console.WriteLine("Valor Bloqueado      : " + sld.VlrBloq.ToString("N2", CultureInfo.InvariantCulture));
-                        Console.WriteLine("Cotas Bloqueadas     : " + sld.CotBloq.ToString("N5", CultureInfo.InvariantCulture));
+                        Console.WriteLine("Valor Bloqueado      : " + sld.ValorBloqueadoTotal.ToString("N2", CultureInfo.InvariantCulture));
+                        Console.WriteLine("Cotas Bloqueadas     : " + sld.CotasBloqueadasTotal.ToString("N5", CultureInfo.InvariantCulture));
                         Console.WriteLine("------------------------------------------------------------------------");
 
-                        Utils.Utils.GravaRegistro("Cotacao Mais Recente;" + sld.VlrCota.ToString("N7", new CultureInfo("pr-BR")));
+                        Utils.Utils.GravaRegistro("Cotacao Mais Recente;" + sld.CotacaoMaisRecente.ToString("N7", new CultureInfo("pr-BR")));
                         Utils.Utils.GravaRegistro("Custo Medio;" + sld.CustoMedio().ToString("N7", new CultureInfo("pr-BR")));
                         Utils.Utils.GravaRegistro("Saldo Prejuizo;" + sld.SaldoPrejuizo.ToString("N2", new CultureInfo("pr-BR")));
-                        Utils.Utils.GravaRegistro("Valor Bloqueado;" + sld.VlrBloq.ToString("N2", new CultureInfo("pr-BR")));
-                        Utils.Utils.GravaRegistro("Cotas Bloqueadas;" + sld.CotBloq.ToString("N5", new CultureInfo("pr-BR")));
+                        Utils.Utils.GravaRegistro("Valor Bloqueado;" + sld.ValorBloqueadoTotal.ToString("N2", new CultureInfo("pr-BR")));
+                        Utils.Utils.GravaRegistro("Cotas Bloqueadas;" + sld.CotasBloqueadasTotal.ToString("N5", new CultureInfo("pr-BR")));
 
                     }
                 }
@@ -104,32 +105,32 @@ namespace Calculo_RV_CM
                     string[] fields = line.Split(';');
                     if (fields[0] != "DTULTRIB")
                     {
-                        string dtultrib = fields[0];
-                        decimal sdoctapl = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
-                        decimal cotaplic = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
+                        string dataAplicacao = fields[0];
+                        decimal saldoCotasCertificado = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
+                        decimal cotacaoAplicacao = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
 
                         //
                         // Monta Lista de Periodos de Apliquotas de IR do Certificado
                         //
 
-                        List<AliquotasIR> aliqIRCert = listAliquotasIR.FindAll(x => x.Ano >= Utils.Utils.Ano(dtultrib));
+                        List<AliquotasIR> ListAliquotasIRCertificado = listAliquotasIR.FindAll(x => x.Ano >= Utils.Utils.Ano(dataAplicacao));
 
                         List<Periodos> listCalcPorPeriodo = new List<Periodos>();
 
-                        foreach (AliquotasIR Obj in aliqIRCert)
+                        foreach (AliquotasIR Obj in ListAliquotasIRCertificado)
                         {
                             Periodos periodo = new Periodos();
                             periodo.Ano = Obj.Ano;
-                            periodo.Aliquota_Ir = Obj.AliquotaIR;
-                            periodo.CotacaoInicial = 0.0m;
+                            periodo.AliquotaIR = Obj.AliquotaIR;
+                            periodo.CotacaoInicio = 0.0m;
                             periodo.CotacaoFim = Obj.CotacaoFim;
-                            periodo.Rendimento = 0.0m;
-                            periodo.PrejACompensar = 0.0m;
-                            periodo.PrejCompensado = 0.0m;
-                            periodo.SaldoPrejCota = 0.0m;
-                            periodo.BaseCalcIR = 0.0m;
-                            periodo.IRCota = 0.0m;
-                            periodo.SaldoPrejReais = 0.0m;
+                            periodo.RendimentoPorCota = 0.0m;
+                            periodo.PrejuizoACompensarPorCota = 0.0m;
+                            periodo.PrejuizoCompensadoPorCota = 0.0m;
+                            periodo.SaldoPrejuizoPorCota = 0.0m;
+                            periodo.BaseCalculoIRPorCota = 0.0m;
+                            periodo.IRPorCota = 0.0m;
+                            periodo.SaldoPrejuizo = 0.0m;
                             listCalcPorPeriodo.Add(periodo);
                         }
 
@@ -137,30 +138,30 @@ namespace Calculo_RV_CM
                         // Faz Calculos Por Periodo de Aliquota de IR
                         //
 
-                        listCalcPorPeriodo = Utils.Utils.CalcPorPeriodo(listCalcPorPeriodo, custoMedio, cotacaoMaisRecente, sdoctapl);
+                        listCalcPorPeriodo = Utils.Utils.CalculoPorPeriodo(listCalcPorPeriodo, custoMedio, cotacaoMaisRecente, saldoCotasCertificado);
 
                         //
                         // Monta Lista de Certificados
                         //
 
                         Certificado certificado = new Certificado();
-                        certificado.Dtultrib = dtultrib;
-                        certificado.Sdoctapl = sdoctapl;
-                        certificado.Cotaplic = cotaplic;
-                        certificado.RendCertificado = listCalcPorPeriodo.Sum(x => x.Rendimento);
+                        certificado.DataAplicacao = dataAplicacao;
+                        certificado.SaldoCotasCertificado = saldoCotasCertificado;
+                        certificado.CotacaoAplicacao = cotacaoAplicacao;
+                        certificado.RendimentoPorCota = listCalcPorPeriodo.Sum(x => x.RendimentoPorCota);
                         certificado.SaldoPrejuizo = 0.0m;
-                        certificado.CotasIsentaMax = 0.0m;
+                        certificado.CotasIsentaMaximo = 0.0m;
                         certificado.CotasIsenta = 0.0m;
                         certificado.CotasTributada = 0.0m;
-                        certificado.VlrPrejCompensado = 0.0m;
-                        certificado.VlrPrejCertificado = listCalcPorPeriodo[listCalcPorPeriodo.Count - 1].SaldoPrejReais;
-                        certificado.IRCota = listCalcPorPeriodo.Sum(x => x.IRCota);
-                        certificado.CotaLiqTrib = 0.0m;
-                        certificado.VlrBruto = 0.0m;
-                        certificado.VlrIR = 0.0m;
-                        certificado.VlrLiquido = 0.0m;
-                        certificado.VlrBloqCotas = 0.0m;
-                        certificado.PeriodoCalc = listCalcPorPeriodo;
+                        certificado.PrejuizoCompensado = 0.0m;
+                        certificado.PrejuizoACompensar = listCalcPorPeriodo[listCalcPorPeriodo.Count - 1].SaldoPrejuizo;
+                        certificado.IRPorCota = listCalcPorPeriodo.Sum(x => x.IRPorCota);
+                        certificado.CotaLiquidaTributada = 0.0m;
+                        certificado.ValorBruto = 0.0m;
+                        certificado.ValorIR = 0.0m;
+                        certificado.ValorLiquido = 0.0m;
+                        certificado.ValorBloqueadoEmCotas = 0.0m;
+                        certificado.PeriodoCalculado = listCalcPorPeriodo;
                         listCert.Add(certificado);
                     }
                 }
@@ -175,7 +176,7 @@ namespace Calculo_RV_CM
             // Calculo por Certificado
             //
 
-            listCert = Utils.Utils.CalcCertificado(listCert, saldoPrejuizo, cotacaoMaisRecente, cotBloq);
+            listCert = Utils.Utils.CalculoCertificado(listCert, saldoPrejuizo, cotacaoMaisRecente, cotasBloqueadasTotal);
 
             //
             // Grava Resultado dos Calculos
@@ -187,19 +188,19 @@ namespace Calculo_RV_CM
 
             foreach (Certificado obj in listCert)
             {
-                Console.WriteLine("Data Aplicação     : " + obj.Dtultrib);
-                Console.WriteLine("Qtd Cota           : " + obj.Sdoctapl.ToString("N5", CultureInfo.InvariantCulture));
+                Console.WriteLine("Data Aplicação     : " + obj.DataAplicacao);
+                Console.WriteLine("Qtd Cota           : " + obj.SaldoCotasCertificado.ToString("N5", CultureInfo.InvariantCulture));
 
              //   Utils.Utils.GravaCertificados(obj);
 
-                foreach (Periodos obj2 in obj.PeriodoCalc)
+                foreach (Periodos obj2 in obj.PeriodoCalculado)
                 {
                     Console.WriteLine(obj2.Ano + "  " +
-                        obj2.Aliquota_Ir.ToString("N2", CultureInfo.InvariantCulture) +
-                        "  " + obj2.CotacaoInicial.ToString("N7", CultureInfo.InvariantCulture) +
+                        obj2.AliquotaIR.ToString("N2", CultureInfo.InvariantCulture) +
+                        "  " + obj2.CotacaoInicio.ToString("N7", CultureInfo.InvariantCulture) +
                         "  " + obj2.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture) +
-                        "  " + obj2.Rendimento.ToString("N10", CultureInfo.InvariantCulture));
-                    Utils.Utils.GravaPeriodos(obj.Dtultrib, obj2);
+                        "  " + obj2.RendimentoPorCota.ToString("N10", CultureInfo.InvariantCulture));
+                    Utils.Utils.GravaPeriodos(obj.DataAplicacao, obj2);
                 }
             }
 
@@ -214,10 +215,12 @@ namespace Calculo_RV_CM
 
             // Grava Totais
 
-            saldoBruto = listCert.Sum(x => x.VlrBruto);
-            valorIR = listCert.Sum(x => x.VlrIR);
-            saldoLiquido = listCert.Sum(x => x.VlrLiquido);
-            saldoBloqueado = listCert.Sum(x => x.VlrBloqCotas) + vlrBloq;
+            saldoBruto = listCert.Sum(x => x.ValorBruto);
+            valorIR = listCert.Sum(x => x.ValorIR);
+            saldoLiquido = listCert.Sum(x => x.ValorLiquido);
+            saldoBloqueado = listCert.Sum(x => x.ValorBloqueadoEmCotas) + valorBloqueadoTotal;
+            custoAplicacao = listCert.Sum(x => x.CustoAplicacao);
+            
 
             Utils.Utils.GravaRegistro(" ");
             Utils.Utils.GravaRegistro("*** Totais ***");
@@ -225,6 +228,7 @@ namespace Calculo_RV_CM
             Utils.Utils.GravaRegistro("IR;" + valorIR.ToString("N2", new CultureInfo("pr-BR")));
             Utils.Utils.GravaRegistro("Saldo Liquido;" + saldoLiquido.ToString("N2", new CultureInfo("pr-BR")));
             Utils.Utils.GravaRegistro("Saldo Bloqueado;" + saldoBloqueado.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.Utils.GravaRegistro("Custo da Aplicacao;" + custoAplicacao.ToString("N2", new CultureInfo("pr-BR")));
 
         }
     }

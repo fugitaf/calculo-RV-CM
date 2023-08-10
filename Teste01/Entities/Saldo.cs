@@ -10,26 +10,26 @@ namespace Calculo_RV_CM.Entities
 {
     public class Saldo
     {
-        public decimal Sdcotmvn { get; set; }
-        public decimal Vlcust { get; set; }
-        public decimal VlrCota { get; set; }
+        public decimal SaldoCotasSubconta { get; set; }
+        public decimal ValorCustoMedio { get; set; }
+        public decimal CotacaoMaisRecente { get; set; }
         public decimal SaldoPrejuizo { get; set; }
-        public decimal VlrBloq { get; set; }
-        public decimal CotBloq { get; set; }
+        public decimal ValorBloqueadoTotal { get; set; }
+        public decimal CotasBloqueadasTotal { get; set; }
 
-        public Saldo(decimal sdcotamvn, decimal vlcust, decimal vlrcota, decimal saldoPrejuizo, decimal vlrbloq, decimal cotbloq)
+        public Saldo(decimal saldoCotasSubconta, decimal valorCustoMedio, decimal cotacaoMaisRecente, decimal saldoPrejuizo, decimal valorBloqueadoTotal, decimal cotasBloqueadasTotal)
         {
-            Sdcotmvn = sdcotamvn;
-            Vlcust = vlcust;
-            VlrCota = vlrcota;
+            SaldoCotasSubconta = saldoCotasSubconta;
+            ValorCustoMedio = valorCustoMedio;
+            CotacaoMaisRecente = cotacaoMaisRecente;
             SaldoPrejuizo = saldoPrejuizo;  
-            VlrBloq = vlrbloq;
-            CotBloq = cotbloq;
+            ValorBloqueadoTotal = valorBloqueadoTotal;
+            CotasBloqueadasTotal = cotasBloqueadasTotal;
         }
 
         public decimal CustoMedio()
         {
-            return Utils.Utils.TruncarValor( Vlcust / Sdcotmvn, 7);
+            return Utils.Utils.TruncarValor( ValorCustoMedio / SaldoCotasSubconta, 7);
         }
     }
 }

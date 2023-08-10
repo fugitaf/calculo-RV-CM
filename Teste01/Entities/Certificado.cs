@@ -9,23 +9,24 @@ namespace Calculo_RV_CM.Entities
 {
     public class Certificado
     {
-        public string Dtultrib { get; set; }
-        public decimal Sdoctapl { get; set; }
-        public decimal Cotaplic { get; set; }
-        public decimal RendCertificado { get; set; }
+        public string DataAplicacao { get; set; }
+        public decimal SaldoCotasCertificado { get; set; }
+        public decimal CotacaoAplicacao { get; set; }
+        public decimal RendimentoPorCota { get; set; }
         public decimal SaldoPrejuizo { get; set; }
-        public decimal CotasIsentaMax { get; set; }
+        public decimal CotasIsentaMaximo { get; set; }
         public decimal CotasIsenta { get; set; }
         public decimal CotasTributada { get; set; }
-        public decimal VlrPrejCompensado { get; set; }
-        public decimal VlrPrejCertificado { get; set; }
-        public decimal IRCota { get; set; }
-        public decimal CotaLiqTrib { get; set; }
-        public decimal VlrBruto { get; set; }
-        public decimal VlrIR { get; set; }
-        public decimal VlrLiquido { get; set; }
-        public decimal VlrBloqCotas { get; set; }
-        public List<Periodos> PeriodoCalc { get; set; }
+        public decimal PrejuizoCompensado { get; set; }
+        public decimal PrejuizoACompensar { get; set; }
+        public decimal IRPorCota { get; set; }
+        public decimal CotaLiquidaTributada { get; set; }
+        public decimal ValorBruto { get; set; }
+        public decimal ValorIR { get; set; }
+        public decimal ValorLiquido { get; set; }
+        public decimal ValorBloqueadoEmCotas { get; set; }
+        public decimal CustoAplicacao { get; set; }
+        public List<Periodos> PeriodoCalculado { get; set; }
     }
 }
         

@@ -12,26 +12,36 @@ namespace Calculo_RV_CM.Utils
 {
     public static class Utils
     {
+        //
+        // Trunca o valor igual o padrao do mainframe
+        //
         public static decimal TruncarValor(decimal valor, int precisao = 2, MidpointRounding metodoTruncar = MidpointRounding.ToZero)
         {
             return decimal.Round(valor, precisao, metodoTruncar);
         }
 
-        public static int Ano(string dtlanct)
+        //
+        // Obtem o Ano de uma Data
+        //
+
+        public static int Ano(string data)
         {
-            return int.Parse(dtlanct.Substring(6));
+            return int.Parse(data.Substring(6));
         }
 
-        public static List<Periodos> CalcPorPeriodo(List<Periodos> periodos, decimal cotacaoInicial, decimal cotamaisrecente, decimal sdoctapl)
+        //
+        // Calcula os periodos de aliquotas de IR do Certificado e compensacao de prejuizo entre periodos
+        //
+        public static List<Periodos> CalculoPorPeriodo(List<Periodos> periodos, decimal cotacaoInicio, decimal cotamaisrecente, decimal saldoCotasCertificado)
         {
             //
             // Atualiza Cotação Inicial e Fim dos Periodos
             //
-            periodos[0].CotacaoInicial = cotacaoInicial;
+            periodos[0].CotacaoInicio = cotacaoInicio;
 
             for (int i = 1; i < periodos.Count; i++)
             {
-                periodos[i].CotacaoInicial = periodos[i - 1].CotacaoFim;
+                periodos[i].CotacaoInicio = periodos[i - 1].CotacaoFim;
             }
             periodos[periodos.Count - 1].CotacaoFim = cotamaisrecente;
 
@@ -41,50 +51,50 @@ namespace Calculo_RV_CM.Utils
 
             for (int i = 0; i < periodos.Count; i++)
             {
-                periodos[i].Rendimento = periodos[i].CotacaoFim - periodos[i].CotacaoInicial;
+                periodos[i].RendimentoPorCota = periodos[i].CotacaoFim - periodos[i].CotacaoInicio;
             }
 
             //
             // Compensa Prejuízo entre Períodos
             //
 
-            decimal saldoPrej = 0.0m;
+            decimal saldoPrejuizoPorCota = 0.0m;
 
             for (int i = 0; i < periodos.Count; i++)
             {
-                periodos[i].PrejACompensar = 0.0m;
-                periodos[i].PrejCompensado = 0.0m;
-                if (periodos[i].Rendimento < 0)
+                periodos[i].PrejuizoACompensarPorCota = 0.0m;
+                periodos[i].PrejuizoCompensadoPorCota = 0.0m;
+                if (periodos[i].RendimentoPorCota < 0)
                 {
-                    periodos[i].PrejACompensar = periodos[i].Rendimento * -1;
-                    saldoPrej += periodos[i].PrejACompensar;
+                    periodos[i].PrejuizoACompensarPorCota = periodos[i].RendimentoPorCota * -1;
+                    saldoPrejuizoPorCota += periodos[i].PrejuizoACompensarPorCota;
                 }
                 else
                 {
-                    if (saldoPrej > 0)
+                    if (saldoPrejuizoPorCota > 0)
                     {
-                        if (saldoPrej > periodos[i].Rendimento)
+                        if (saldoPrejuizoPorCota > periodos[i].RendimentoPorCota)
                         {
-                            periodos[i].PrejCompensado = periodos[i].Rendimento;
-                            saldoPrej -= periodos[i].PrejCompensado;
+                            periodos[i].PrejuizoCompensadoPorCota = periodos[i].RendimentoPorCota;
+                            saldoPrejuizoPorCota -= periodos[i].PrejuizoCompensadoPorCota;
                         }
                         else
                         {
-                            periodos[i].PrejCompensado = saldoPrej;
-                            saldoPrej = 0.0m;
+                            periodos[i].PrejuizoCompensadoPorCota = saldoPrejuizoPorCota;
+                            saldoPrejuizoPorCota = 0.0m;
                         }
                     }
                 }
 
-                periodos[i].BaseCalcIR = periodos[i].Rendimento + periodos[i].PrejACompensar - periodos[i].PrejCompensado;
-                periodos[i].SaldoPrejCota = saldoPrej;
-                periodos[i].SaldoPrejReais = Utils.TruncarValor(periodos[i].SaldoPrejCota * sdoctapl, 2);
+                periodos[i].BaseCalculoIRPorCota = periodos[i].RendimentoPorCota + periodos[i].PrejuizoACompensarPorCota - periodos[i].PrejuizoCompensadoPorCota;
+                periodos[i].SaldoPrejuizoPorCota = saldoPrejuizoPorCota;
+                periodos[i].SaldoPrejuizo = Utils.TruncarValor(periodos[i].SaldoPrejuizoPorCota * saldoCotasCertificado, 2);
 
                 //
                 // Calcula IR por cota
                 //
 
-                periodos[i].IRCota = Utils.TruncarValor(periodos[i].BaseCalcIR * periodos[i].Aliquota_Ir, 10);
+                periodos[i].IRPorCota = Utils.TruncarValor(periodos[i].BaseCalculoIRPorCota * periodos[i].AliquotaIR, 10);
 
             }
 
@@ -92,107 +102,113 @@ namespace Calculo_RV_CM.Utils
 
         }
         //
-        // Compensação de Prejuízo entre Certificados
+        // Calculo do Certificado e Compensação de Prejuízo entre Certificados
         //
-        public static List<Certificado> CalcCertificado(List<Certificado> certificados, decimal saldoPrejTotal, decimal cotacaoMaisRecente, decimal cotBloq)
+        public static List<Certificado> CalculoCertificado(List<Certificado> certificados, decimal saldoPrejuizo, decimal cotacaoMaisRecente, decimal cotasBloqueadas)
         {
             for (int i = 0; i < certificados.Count; i++)
             {
-                decimal cotasPrejMax = 0.0m;
-                decimal cotasPrejMaxAjuste = 0.0m;
-                decimal ValorPrejMax = 0.0m;
+                decimal cotasPrejuizoMaximo = 0.0m;
+                decimal cotasPrejuizoMaximoAjuste = 0.0m;
+                decimal ValorPrejuizoMaximo = 0.0m;
 
                 //
                 // Soma Prejuizo do Certificado no Saldo Prejuízo Total
                 //
 
-                saldoPrejTotal = saldoPrejTotal + certificados[i].VlrPrejCertificado;
+                saldoPrejuizo += certificados[i].PrejuizoACompensar;
 
                 //
                 // Calcula quantidade maxima de cotas para compensar o Saldo de Prejuízo
                 //
 
-                if (certificados[i].RendCertificado > 0 && saldoPrejTotal > 0)
+                if (certificados[i].RendimentoPorCota > 0 && saldoPrejuizo > 0)
                 {
-                    cotasPrejMax = Utils.TruncarValor(saldoPrejTotal / certificados[i].RendCertificado, 5);
-                    ValorPrejMax = Utils.TruncarValor(cotasPrejMax * certificados[i].RendCertificado, 2);
-                    if (saldoPrejTotal == ValorPrejMax)
+                    cotasPrejuizoMaximo = Utils.TruncarValor(saldoPrejuizo / certificados[i].RendimentoPorCota, 5);
+                    ValorPrejuizoMaximo = Utils.TruncarValor(cotasPrejuizoMaximo * certificados[i].RendimentoPorCota, 2);
+                    if (saldoPrejuizo == ValorPrejuizoMaximo)
                     {
-                        certificados[i].CotasIsentaMax = cotasPrejMax;
+                        certificados[i].CotasIsentaMaximo = cotasPrejuizoMaximo;
                     }
                     else
                     {
-                        cotasPrejMaxAjuste = cotasPrejMax + 0.00001m;
-                        ValorPrejMax = Utils.TruncarValor(cotasPrejMaxAjuste * certificados[i].RendCertificado, 2);
-                        if (saldoPrejTotal == ValorPrejMax)
+                        cotasPrejuizoMaximoAjuste = cotasPrejuizoMaximo + 0.00001m;
+                        ValorPrejuizoMaximo = Utils.TruncarValor(cotasPrejuizoMaximoAjuste * certificados[i].RendimentoPorCota, 2);
+                        if (saldoPrejuizo == ValorPrejuizoMaximo)
                         {
-                            certificados[i].CotasIsentaMax = cotasPrejMaxAjuste;
+                            certificados[i].CotasIsentaMaximo = cotasPrejuizoMaximoAjuste;
                         }
                         else
                         {
-                            certificados[i].CotasIsentaMax = cotasPrejMax;
+                            certificados[i].CotasIsentaMaximo = cotasPrejuizoMaximo;
                         }
                     }
                 }
                 else
                 {
-                    certificados[i].CotasIsentaMax = 0.0m;
+                    certificados[i].CotasIsentaMaximo = 0.0m;
                 }
 
                 //
                 // Calcula Quantidade de Cotas Isentas
                 //
 
-                if (certificados[i].CotasIsentaMax > certificados[i].Sdoctapl)
+                if (certificados[i].CotasIsentaMaximo > certificados[i].SaldoCotasCertificado)
                 {
-                    certificados[i].CotasIsenta = certificados[i].Sdoctapl;
+                    certificados[i].CotasIsenta = certificados[i].SaldoCotasCertificado;
                 }
                 else
                 {
-                    certificados[i].CotasIsenta = certificados[i].CotasIsentaMax;
+                    certificados[i].CotasIsenta = certificados[i].CotasIsentaMaximo;
                 }
 
                 //
                 // Calcula Quantidade de Cotas Tributadas
                 //
 
-                certificados[i].CotasTributada = certificados[i].Sdoctapl - certificados[i].CotasIsenta;
+                certificados[i].CotasTributada = certificados[i].SaldoCotasCertificado - certificados[i].CotasIsenta;
 
                 //
                 // Calcula Prejuizo Compensado
                 //
 
-                certificados[i].VlrPrejCompensado = Utils.TruncarValor(certificados[i].CotasIsenta * certificados[i].RendCertificado, 2);
+                certificados[i].PrejuizoCompensado = Utils.TruncarValor(certificados[i].CotasIsenta * certificados[i].RendimentoPorCota, 2);
 
                 //
                 // Calcula Novo Saldo de Prejuízo
                 //
 
-                saldoPrejTotal = saldoPrejTotal - certificados[i].VlrPrejCompensado;
-                certificados[i].SaldoPrejuizo = saldoPrejTotal;
+                saldoPrejuizo -= certificados[i].PrejuizoCompensado;
+                certificados[i].SaldoPrejuizo = saldoPrejuizo;
 
                 //
                 // Calcula Cota Liquida Tributada
                 //
 
-                certificados[i].CotaLiqTrib = cotacaoMaisRecente - certificados[i].IRCota;
+                certificados[i].CotaLiquidaTributada = cotacaoMaisRecente - certificados[i].IRPorCota;
 
                 //
                 // Calcula Valor Bruto
                 //
 
-                certificados[i].VlrBruto = Utils.TruncarValor(certificados[i].Sdoctapl * cotacaoMaisRecente, 2);
+                certificados[i].ValorBruto = Utils.TruncarValor(certificados[i].SaldoCotasCertificado * cotacaoMaisRecente, 2);
 
                 //
                 // Calcula o Valor do IR
                 //
-                certificados[i].VlrIR = Utils.TruncarValor(certificados[i].CotasTributada * certificados[i].IRCota, 2);
+                certificados[i].ValorIR = Utils.TruncarValor(certificados[i].CotasTributada * certificados[i].IRPorCota, 2);
 
                 //
                 // Calcula Valor Liquido
                 //
 
-                certificados[i].VlrLiquido = certificados[i].VlrBruto - certificados[i].VlrIR;
+                certificados[i].ValorLiquido = certificados[i].ValorBruto - certificados[i].ValorIR;
+
+                //
+                // Calcula Custo da Aplicacao
+                //
+
+                certificados[i].CustoAplicacao = Utils.TruncarValor(certificados[i].SaldoCotasCertificado * certificados[i].CotacaoAplicacao, 2);
 
             }
 
@@ -200,25 +216,25 @@ namespace Calculo_RV_CM.Utils
             // Calcula Valor do Bloqueio em Cotas
             //
 
-            for (int i2 = certificados.Count - 1; i2 >= 0 && cotBloq > 0; i2--)
+            for (int i2 = certificados.Count - 1; i2 >= 0 && cotasBloqueadas > 0; i2--)
             {
                 decimal cotasLivres = 0.0m;
-                decimal vlrLiqLivre = 0.0m;
+                decimal valorLiquidoLivre = 0.0m;
 
-                if (certificados[i2].Sdoctapl > cotBloq)
+                if (certificados[i2].SaldoCotasCertificado > cotasBloqueadas)
                 {
-                    cotasLivres = certificados[i2].Sdoctapl - cotBloq;
-                    cotBloq = 0.0m;
+                    cotasLivres = certificados[i2].SaldoCotasCertificado - cotasBloqueadas;
+                    cotasBloqueadas = 0.0m;
                 }
                 else
                 {
                     cotasLivres = 0.0m;
-                    cotBloq = cotBloq - certificados[i2].Sdoctapl;
+                    cotasBloqueadas -= certificados[i2].SaldoCotasCertificado;
                 }
 
-                vlrLiqLivre = Utils.TruncarValor(cotasLivres * certificados[i2].CotaLiqTrib, 2);
+                valorLiquidoLivre = Utils.TruncarValor(cotasLivres * certificados[i2].CotaLiquidaTributada, 2);
 
-                certificados[i2].VlrBloqCotas = certificados[i2].VlrLiquido - vlrLiqLivre;
+                certificados[i2].ValorBloqueadoEmCotas = certificados[i2].ValorLiquido - valorLiquidoLivre;
             }
 
             return certificados;
@@ -227,61 +243,63 @@ namespace Calculo_RV_CM.Utils
         public static void CabecalhoPeriodos()
         {
             Utils.GravaRegistro(" ");
-            string registro = "*** Periodos ***; Dtultrib;" + "Ano;" + "Aliquota_Ir;" +
-                "Cotacao_Inicial;" + "Cotacao_Fim;" + "Rendimento;" + "Prej_A_Compensar;" +
-                "Prej_Compensado;" + "Saldo_Prej_Cota;" + "Base_Calc_IR;" + "IR_Cota;" + "Saldo_Prej_Reais";
+            string registro = "*** Periodos ***; Data_Aplicacao;" + "Ano;" + "Aliquota_Ir;" +
+                "Cotacao_Inicio;" + "Cotacao_Fim;" + "Rendimento;" + "Prejuizo_A_Compensar;" +
+                "Prejuizo_Compensado;" + "Saldo_Prejuizo_Por_Cota;" + "Base_Calc_IR_Por_Cota;" + "IR_Por_Cota;" + "Saldo_Prejuizo";
             Utils.GravaRegistro(registro);
         }
 
-        public static void GravaPeriodos(string dtultrib, Periodos calcPorPeriodo)
+        public static void GravaPeriodos(string dtultrib, Periodos calculoPorPeriodo)
         {
             string registro = ";" +
                 dtultrib + ";" +
-                calcPorPeriodo.Ano + ";" +
-                calcPorPeriodo.Aliquota_Ir.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.CotacaoInicial.ToString("N7", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.CotacaoFim.ToString("N7", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.Rendimento.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.PrejACompensar.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.PrejCompensado.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.SaldoPrejCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.BaseCalcIR.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.IRCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                calcPorPeriodo.SaldoPrejReais.ToString("N2", new CultureInfo("pt-BR"));
+                calculoPorPeriodo.Ano + ";" +
+                calculoPorPeriodo.AliquotaIR.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.CotacaoInicio.ToString("N7", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.CotacaoFim.ToString("N7", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.RendimentoPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.PrejuizoACompensarPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.PrejuizoCompensadoPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.SaldoPrejuizoPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.BaseCalculoIRPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.IRPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.SaldoPrejuizo.ToString("N2", new CultureInfo("pt-BR"));
             Utils.GravaRegistro(registro);
         }
 
         public static void CabecalhoCertificados()
         {
             Utils.GravaRegistro(" ");
-            string registro = "*** Certificados ***;" + "Dtultrib;" + "Sdoctapl;" + "Cotaplic;" +
-                "RendCertificado;" + "SaldoPrejuizo;" + "CotasIsentaMax;" +
-                "CotasIsenta;" + "CotasTributada;" + "VlrPrejCompensado;" +
-                "VlrPrejCertificado;" + "IRCota;" + "CotaLiquTrib;" +
-                "ValorBruto;" + "IR;" + "ValorLiquido;" + "ValorBloqCotas";
+            string registro = "*** Certificados ***;" + "Data_Aplicacao;" + "Saldo_Cotas;" + "Cotacao_Aplicacao;" +
+                "Rendimento;" + "Saldo_Prejuizo;" + "Cotas_Isenta_Maximo;" +
+                "Cotas_Isenta;" + "Cotas_Tributada;" + "Prejuizo_Compensado;" +
+                "Prejuizo_A_Compensar;" + "IR_Por_Cota;" + "Cota_Liquida_Tributada;" +
+                "Valor_Bruto;" + "Valor_IR;" + "Valor_Liquido;" + "Valor_Bloqueio_Em_Cotas;" +
+                "Custo_Aplicacao";
             Utils.GravaRegistro(registro);
 
         }
 
-        public static void GravaCertificados(Certificado cert)
+        public static void GravaCertificados(Certificado certificados)
         {
             string registro = ";" +
-                cert.Dtultrib + ";" +
-                cert.Sdoctapl.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                cert.Cotaplic.ToString("N7", new CultureInfo("pt-BR")) + ";" +
-                cert.RendCertificado.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                cert.SaldoPrejuizo.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                cert.CotasIsentaMax.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                cert.CotasIsenta.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                cert.CotasTributada.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                cert.VlrPrejCompensado.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                cert.VlrPrejCertificado.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                cert.IRCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                cert.CotaLiqTrib.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                cert.VlrBruto.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                cert.VlrIR.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                cert.VlrLiquido.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                cert.VlrBloqCotas.ToString("N2", new CultureInfo("pt-BR"));
+                certificados.DataAplicacao + ";" +
+                certificados.SaldoCotasCertificado.ToString("N5", new CultureInfo("pt-BR")) + ";" +
+                certificados.CotacaoAplicacao.ToString("N7", new CultureInfo("pt-BR")) + ";" +
+                certificados.RendimentoPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                certificados.SaldoPrejuizo.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                certificados.CotasIsentaMaximo.ToString("N5", new CultureInfo("pt-BR")) + ";" +
+                certificados.CotasIsenta.ToString("N5", new CultureInfo("pt-BR")) + ";" +
+                certificados.CotasTributada.ToString("N5", new CultureInfo("pt-BR")) + ";" +
+                certificados.PrejuizoCompensado.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                certificados.PrejuizoACompensar.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                certificados.IRPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                certificados.CotaLiquidaTributada.ToString("N10", new CultureInfo("pt-BR")) + ";" +
+                certificados.ValorBruto.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                certificados.ValorIR.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                certificados.ValorLiquido.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                certificados.ValorBloqueadoEmCotas.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                certificados.CustoAplicacao.ToString("N2", new CultureInfo("pt-BR"));
             Utils.GravaRegistro(registro);
         }
 
