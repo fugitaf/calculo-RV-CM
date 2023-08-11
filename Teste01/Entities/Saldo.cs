@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
-using Calculo_RV_CM.Utils;
-
-namespace Calculo_RV_CM.Entities
+﻿namespace Calculo_RV_CM.Entities
 {
     public class Saldo
     {

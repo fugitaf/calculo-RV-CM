@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Pipes;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Calculo_RV_CM.Entities
+﻿namespace Calculo_RV_CM.Entities
 {
     public class Certificado
     {
         public string DataAplicacao { get; set; }
         public decimal SaldoCotasCertificado { get; set; }
         public decimal CotacaoAplicacao { get; set; }
+        public decimal SaldoAmortizacaoDePrincipal { get; set; }
         public decimal RendimentoPorCota { get; set; }
         public decimal SaldoPrejuizo { get; set; }
         public decimal CotasIsentaMaximo { get; set; }

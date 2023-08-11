@@ -1,12 +1,5 @@
-﻿using System;
+﻿using Calculo_RV_CM.Entities;
 using System.Globalization;
-using System.IO;
-using System.Collections.Generic;
-using Calculo_RV_CM.Entities;
-using System.IO.Pipes;
-using System.Runtime.ConstrainedExecution;
-using Microsoft.VisualBasic;
-using System.Linq;
 
 namespace Calculo_RV_CM
 {
@@ -108,6 +101,7 @@ namespace Calculo_RV_CM
                         string dataAplicacao = fields[0];
                         decimal saldoCotasCertificado = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
                         decimal cotacaoAplicacao = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
+                        decimal saldoAmortizacaoDePrincipal = decimal.Parse(fields[3], new CultureInfo("pt-BR"));
 
                         //
                         // Monta Lista de Periodos de Apliquotas de IR do Certificado
@@ -123,6 +117,7 @@ namespace Calculo_RV_CM
                             periodo.Ano = Obj.Ano;
                             periodo.AliquotaIR = Obj.AliquotaIR;
                             periodo.CotacaoInicio = 0.0m;
+                            periodo.SaldoAmortizacaoDePrincipalPorCota = 0.0m;
                             periodo.CotacaoFim = Obj.CotacaoFim;
                             periodo.RendimentoPorCota = 0.0m;
                             periodo.PrejuizoACompensarPorCota = 0.0m;
@@ -138,7 +133,8 @@ namespace Calculo_RV_CM
                         // Faz Calculos Por Periodo de Aliquota de IR
                         //
 
-                        listCalcPorPeriodo = Utils.Utils.CalculoPorPeriodo(listCalcPorPeriodo, custoMedio, cotacaoMaisRecente, saldoCotasCertificado);
+                        listCalcPorPeriodo = Utils.Utils.CalculoPorPeriodo(listCalcPorPeriodo, custoMedio, cotacaoMaisRecente, saldoCotasCertificado,
+                                                                            saldoAmortizacaoDePrincipal);
 
                         //
                         // Monta Lista de Certificados
@@ -148,6 +144,7 @@ namespace Calculo_RV_CM
                         certificado.DataAplicacao = dataAplicacao;
                         certificado.SaldoCotasCertificado = saldoCotasCertificado;
                         certificado.CotacaoAplicacao = cotacaoAplicacao;
+                        certificado.SaldoAmortizacaoDePrincipal = saldoAmortizacaoDePrincipal;
                         certificado.RendimentoPorCota = listCalcPorPeriodo.Sum(x => x.RendimentoPorCota);
                         certificado.SaldoPrejuizo = 0.0m;
                         certificado.CotasIsentaMaximo = 0.0m;

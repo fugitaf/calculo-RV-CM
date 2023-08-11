@@ -1,12 +1,5 @@
 ﻿using Calculo_RV_CM.Entities;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Calculo_RV_CM.Utils
 {
@@ -32,12 +25,35 @@ namespace Calculo_RV_CM.Utils
         //
         // Calcula os periodos de aliquotas de IR do Certificado e compensacao de prejuizo entre periodos
         //
-        public static List<Periodos> CalculoPorPeriodo(List<Periodos> periodos, decimal cotacaoInicio, decimal cotamaisrecente, decimal saldoCotasCertificado)
+        public static List<Periodos> CalculoPorPeriodo(List<Periodos> periodos, decimal cotacaoInicio, decimal cotamaisrecente, decimal saldoCotasCertificado,
+                                                       decimal saldoAmortizacaoDePrincipal)
         {
             //
-            // Atualiza Cotação Inicial e Fim dos Periodos
+            // Atualiza Cotacao Inicial e Ajuste com Amortização de Principal
             //
+
             periodos[0].CotacaoInicio = cotacaoInicio;
+
+            if (saldoAmortizacaoDePrincipal > 0)
+            {
+                periodos[0].SaldoAmortizacaoDePrincipalPorCota = Utils.TruncarValor(saldoAmortizacaoDePrincipal / saldoCotasCertificado, 11);
+                if (periodos[0].SaldoAmortizacaoDePrincipalPorCota > cotacaoInicio)
+                {
+                    periodos[0].CotacaoInicio = 0.0m;
+                }
+                else
+                {
+                    periodos[0].CotacaoInicio = Utils.TruncarValor(cotacaoInicio - periodos[0].SaldoAmortizacaoDePrincipalPorCota , 7);
+                }
+            }
+            else
+            {
+                periodos[0].CotacaoInicio = cotacaoInicio;
+            }
+
+            //
+            // Atualiza Cotacao Fim dos Periodos
+            //
 
             for (int i = 1; i < periodos.Count; i++)
             {
@@ -244,7 +260,7 @@ namespace Calculo_RV_CM.Utils
         {
             Utils.GravaRegistro(" ");
             string registro = "*** Periodos ***; Data_Aplicacao;" + "Ano;" + "Aliquota_Ir;" +
-                "Cotacao_Inicio;" + "Cotacao_Fim;" + "Rendimento;" + "Prejuizo_A_Compensar;" +
+                "Saldo Amortizacao Principal Por Cota;" + "Cotacao_Inicio;" + "Cotacao_Fim;" + "Rendimento;" + "Prejuizo_A_Compensar;" +
                 "Prejuizo_Compensado;" + "Saldo_Prejuizo_Por_Cota;" + "Base_Calc_IR_Por_Cota;" + "IR_Por_Cota;" + "Saldo_Prejuizo";
             Utils.GravaRegistro(registro);
         }
@@ -255,6 +271,7 @@ namespace Calculo_RV_CM.Utils
                 dtultrib + ";" +
                 calculoPorPeriodo.Ano + ";" +
                 calculoPorPeriodo.AliquotaIR.ToString("N2", new CultureInfo("pt-BR")) + ";" +
+                calculoPorPeriodo.SaldoAmortizacaoDePrincipalPorCota.ToString("N11", new CultureInfo("pt-BR")) + ";" +
                 calculoPorPeriodo.CotacaoInicio.ToString("N7", new CultureInfo("pt-BR")) + ";" +
                 calculoPorPeriodo.CotacaoFim.ToString("N7", new CultureInfo("pt-BR")) + ";" +
                 calculoPorPeriodo.RendimentoPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
@@ -271,7 +288,7 @@ namespace Calculo_RV_CM.Utils
         {
             Utils.GravaRegistro(" ");
             string registro = "*** Certificados ***;" + "Data_Aplicacao;" + "Saldo_Cotas;" + "Cotacao_Aplicacao;" +
-                "Rendimento;" + "Saldo_Prejuizo;" + "Cotas_Isenta_Maximo;" +
+               "Saldo Amortizacao de Pricipal;" + "Rendimento;" + "Saldo_Prejuizo;" + "Cotas_Isenta_Maximo;" +
                 "Cotas_Isenta;" + "Cotas_Tributada;" + "Prejuizo_Compensado;" +
                 "Prejuizo_A_Compensar;" + "IR_Por_Cota;" + "Cota_Liquida_Tributada;" +
                 "Valor_Bruto;" + "Valor_IR;" + "Valor_Liquido;" + "Valor_Bloqueio_Em_Cotas;" +
@@ -286,6 +303,7 @@ namespace Calculo_RV_CM.Utils
                 certificados.DataAplicacao + ";" +
                 certificados.SaldoCotasCertificado.ToString("N5", new CultureInfo("pt-BR")) + ";" +
                 certificados.CotacaoAplicacao.ToString("N7", new CultureInfo("pt-BR")) + ";" +
+                certificados.SaldoAmortizacaoDePrincipal.ToString("N2", new CultureInfo("pt-BR")) + ";" +
                 certificados.RendimentoPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
                 certificados.SaldoPrejuizo.ToString("N2", new CultureInfo("pt-BR")) + ";" +
                 certificados.CotasIsentaMaximo.ToString("N5", new CultureInfo("pt-BR")) + ";" +
