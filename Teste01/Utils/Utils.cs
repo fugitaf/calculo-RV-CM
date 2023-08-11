@@ -32,8 +32,6 @@ namespace Calculo_RV_CM.Utils
             // Atualiza Cotacao Inicial e Ajuste com Amortização de Principal
             //
 
-            periodos[0].CotacaoInicio = cotacaoInicio;
-
             if (saldoAmortizacaoDePrincipal > 0)
             {
                 periodos[0].SaldoAmortizacaoDePrincipalPorCota = Utils.TruncarValor(saldoAmortizacaoDePrincipal / saldoCotasCertificado, 11);
@@ -43,7 +41,7 @@ namespace Calculo_RV_CM.Utils
                 }
                 else
                 {
-                    periodos[0].CotacaoInicio = Utils.TruncarValor(cotacaoInicio - periodos[0].SaldoAmortizacaoDePrincipalPorCota , 7);
+                    periodos[0].CotacaoInicio = Utils.TruncarValor(cotacaoInicio - periodos[0].SaldoAmortizacaoDePrincipalPorCota, 7);
                 }
             }
             else
