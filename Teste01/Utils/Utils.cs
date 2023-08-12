@@ -258,7 +258,7 @@ namespace Calculo_RV_CM.Utils
         {
             Utils.GravaRegistro(" ");
             string registro = "*** Periodos ***; Data_Aplicacao;" + "Ano;" + "Aliquota_Ir;" +
-                "Saldo Amortizacao Principal Por Cota;" + "Cotacao_Inicio;" + "Cotacao_Fim;" + "Rendimento;" + "Prejuizo_A_Compensar;" +
+                "Saldo Amortizacao de Principal Por Cota;" + "Cotacao_Inicio;" + "Cotacao_Fim;" + "Rendimento;" + "Prejuizo_A_Compensar;" +
                 "Prejuizo_Compensado;" + "Saldo_Prejuizo_Por_Cota;" + "Base_Calc_IR_Por_Cota;" + "IR_Por_Cota;" + "Saldo_Prejuizo";
             Utils.GravaRegistro(registro);
         }
@@ -292,7 +292,6 @@ namespace Calculo_RV_CM.Utils
                 "Valor_Bruto;" + "Valor_IR;" + "Valor_Liquido;" + "Valor_Bloqueio_Em_Cotas;" +
                 "Custo_Aplicacao";
             Utils.GravaRegistro(registro);
-
         }
 
         public static void GravaCertificados(Certificado certificados)
