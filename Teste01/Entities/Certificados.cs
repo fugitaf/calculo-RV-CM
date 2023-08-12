@@ -1,6 +1,6 @@
 ﻿namespace Calculo_RV_CM.Entities
 {
-    public class Certificado
+    public class Certificados
     {
         public string DataAplicacao { get; set; }
         public decimal SaldoCotasCertificado { get; set; }
@@ -18,9 +18,7 @@
         public decimal ValorBruto { get; set; }
         public decimal ValorIR { get; set; }
         public decimal ValorLiquido { get; set; }
-        public decimal ValorBloqueadoEmCotas { get; set; }
         public decimal CustoAplicacao { get; set; }
         public List<Periodos> PeriodoCalculado { get; set; }
     }
 }
-        

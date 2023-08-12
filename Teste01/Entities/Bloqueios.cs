@@ -12,10 +12,6 @@ namespace Calculo_RV_CM.Entities
         public decimal CotasBloqueadasTotal { get; set; }
 
         public Bloqueios() { }
-        public Bloqueios(decimal valorBloqueadoTotal, decimal cotasBloqueadasTotal)
-        {
-            ValorBloqueadoTotal = valorBloqueadoTotal;
-            CotasBloqueadasTotal = cotasBloqueadasTotal;
-        }
+
     }
 }

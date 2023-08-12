@@ -11,7 +11,7 @@ namespace Calculo_RV_CM
             Bloqueios bloqueios = new Bloqueios();
             Fundos fundos = new Fundos();
             List<AliquotasIR> listAliquotasIR = new List<AliquotasIR>();
-            List<Certificado> listCert = new List<Certificado>();
+            List<Certificados> listCert = new List<Certificados>();
             string pathSld = @"C:\Users\fefug_skli85i\Documents\Temp\SLD.csv";
             string pathApl = @"C:\Users\fefug_skli85i\Documents\Temp\APL.csv";
             Console.WriteLine("------------------------------------------------------------------------");
@@ -78,9 +78,7 @@ namespace Calculo_RV_CM
                         decimal cotacaoAplicacao = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
                         decimal saldoAmortizacaoDePrincipal = decimal.Parse(fields[3], new CultureInfo("pt-BR"));
 
-                        //
-                        // Monta Lista de Periodos de Apliquotas de IR do Certificado
-                        //
+                        // Monta Lista de Periodos de Aliquotas de IR do Certificado
 
                         List<AliquotasIR> ListAliquotasIRCertificado = listAliquotasIR.FindAll(x => x.Ano >= Utils.Utils.Ano(dataAplicacao));
 
@@ -104,18 +102,14 @@ namespace Calculo_RV_CM
                             listCalcPorPeriodo.Add(periodo);
                         }
 
-                        //
-                        // Faz Calculos Por Periodo de Aliquota de IR
-                        //
+                        // Calculos Por Periodo de Aliquotas de IR
 
                         listCalcPorPeriodo = Utils.Utils.CalculoPorPeriodo(listCalcPorPeriodo, saldo.CustoMedio(), fundos.CotacaoMaisRecente, saldoCotasCertificado,
                                                                             saldoAmortizacaoDePrincipal);
 
-                        //
                         // Monta Lista de Certificados
-                        //
 
-                        Certificado certificado = new Certificado();
+                        Certificados certificado = new Certificados();
                         certificado.DataAplicacao = dataAplicacao;
                         certificado.SaldoCotasCertificado = saldoCotasCertificado;
                         certificado.CotacaoAplicacao = cotacaoAplicacao;
@@ -132,7 +126,6 @@ namespace Calculo_RV_CM
                         certificado.ValorBruto = 0.0m;
                         certificado.ValorIR = 0.0m;
                         certificado.ValorLiquido = 0.0m;
-                        certificado.ValorBloqueadoEmCotas = 0.0m;
                         certificado.PeriodoCalculado = listCalcPorPeriodo;
                         listCert.Add(certificado);
                     }
@@ -144,80 +137,38 @@ namespace Calculo_RV_CM
                 Console.WriteLine(e.Message);
             }
 
-            //
             // Calculo por Certificado
-            //
 
-            listCert = Utils.Utils.CalculoCertificado(listCert, saldo.SaldoPrejuizo, fundos.CotacaoMaisRecente, bloqueios.CotasBloqueadasTotal);
+            listCert = Utils.Utils.CalculoCertificado(listCert, saldo.SaldoPrejuizo, fundos.CotacaoMaisRecente);
 
-            //
-            // Grava Informações da Entrada
-            //
+            // Grava Informações
 
-            Console.WriteLine("Cotação Mais Recente : " + fundos.CotacaoMaisRecente.ToString("N7", CultureInfo.InvariantCulture));
-            Console.WriteLine("Custo Médio          : " + saldo.CustoMedio().ToString("N7", CultureInfo.InvariantCulture));
-            Console.WriteLine("Saldo Prejuizo       : " + saldo.SaldoPrejuizo.ToString("N2", CultureInfo.InvariantCulture));
-            Console.WriteLine("Valor Bloqueado      : " + saldo.ValorBloqueadoTotal.ToString("N2", CultureInfo.InvariantCulture));
-            Console.WriteLine("Cotas Bloqueadas     : " + saldo.CotasBloqueadasTotal.ToString("N5", CultureInfo.InvariantCulture));
-            Console.WriteLine("------------------------------------------------------------------------");
+            Utils.Utils.GravaDadosDeEntrada(saldo, fundos, bloqueios);
 
-            Utils.Utils.GravaRegistro("Cotacao Mais Recente;" + fundos.CotacaoMaisRecente.ToString("N7", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Custo Medio;" + saldo.CustoMedio().ToString("N7", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Saldo Prejuizo;" + saldo.SaldoPrejuizo.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Valor Bloqueado;" + bloqueios.ValorBloqueadoTotal.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Cotas Bloqueadas;" + bloqueios.CotasBloqueadasTotal.ToString("N5", new CultureInfo("pr-BR")));
+            Utils.Utils.GravaPeriodosDoCertificado(listCert);
 
-            //
-            // Grava Resultado dos Calculos
-            //
+            Utils.Utils.GravaCertificadosCalculados(listCert);
 
-            // Grava Calculo dos Periodos dos Certificados
-
-            Utils.Utils.CabecalhoPeriodos();
-
-            foreach (Certificado obj in listCert)
-            {
-                Console.WriteLine("Data Aplicação     : " + obj.DataAplicacao);
-                Console.WriteLine("Qtd Cota           : " + obj.SaldoCotasCertificado.ToString("N5", CultureInfo.InvariantCulture));
-
-                //   Utils.Utils.GravaCertificados(obj);
-
-                foreach (Periodos obj2 in obj.PeriodoCalculado)
-                {
-                    Console.WriteLine(obj2.Ano + "  " +
-                        obj2.AliquotaIR.ToString("N2", CultureInfo.InvariantCulture) +
-                        "  " + obj2.CotacaoInicio.ToString("N7", CultureInfo.InvariantCulture) +
-                        "  " + obj2.CotacaoFim.ToString("N7", CultureInfo.InvariantCulture) +
-                        "  " + obj2.RendimentoPorCota.ToString("N10", CultureInfo.InvariantCulture));
-                    Utils.Utils.GravaPeriodos(obj.DataAplicacao, obj2);
-                }
-            }
-
-            // Grava Calculos dos Certificados
-
-            Utils.Utils.CabecalhoCertificados();
-
-            foreach (Certificado obj in listCert)
-            {
-                Utils.Utils.GravaCertificados(obj);
-            }
-
-            // Grava Totais
-
+            decimal custoAplicacao = listCert.Sum(x => x.CustoAplicacao);
             decimal saldoBruto = listCert.Sum(x => x.ValorBruto);
             decimal valorIR = listCert.Sum(x => x.ValorIR);
             decimal saldoLiquido = listCert.Sum(x => x.ValorLiquido);
-            decimal saldoBloqueado = listCert.Sum(x => x.ValorBloqueadoEmCotas) + bloqueios.ValorBloqueadoTotal;
-            decimal custoAplicacao = listCert.Sum(x => x.CustoAplicacao);
+            decimal saldoBloqueado = Utils.Utils.CalculaSaldoBloqueado(listCert, bloqueios.ValorBloqueadoTotal, bloqueios.CotasBloqueadasTotal);
+            decimal aplicacoes = 0.0m;
+            decimal resgates = 0.0m;
+            decimal disponivelResgate = saldoLiquido - saldoBloqueado + aplicacoes - resgates;
 
 
             Utils.Utils.GravaRegistro(" ");
             Utils.Utils.GravaRegistro("*** Totais ***");
+            Utils.Utils.GravaRegistro("Custo da Aplicacao;" + custoAplicacao.ToString("N2", new CultureInfo("pr-BR")));
             Utils.Utils.GravaRegistro("Saldo Bruto;" + saldoBruto.ToString("N2", new CultureInfo("pr-BR")));
             Utils.Utils.GravaRegistro("IR;" + valorIR.ToString("N2", new CultureInfo("pr-BR")));
             Utils.Utils.GravaRegistro("Saldo Liquido;" + saldoLiquido.ToString("N2", new CultureInfo("pr-BR")));
             Utils.Utils.GravaRegistro("Saldo Bloqueado;" + saldoBloqueado.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Custo da Aplicacao;" + custoAplicacao.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.Utils.GravaRegistro("Aplicacoes;" + aplicacoes.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.Utils.GravaRegistro("Resgates;" + resgates.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.Utils.GravaRegistro("Disponivel para Resgate;" + disponivelResgate.ToString("N2", new CultureInfo("pr-BR")));
 
         }
     }
