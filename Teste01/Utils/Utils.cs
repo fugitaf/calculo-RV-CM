@@ -229,6 +229,18 @@ namespace Calculo_RV_CM.Utils
             return saldoBloqueado;
         }
 
+        public static decimal CalculaDisponivelResgate (decimal saldoLiquido, decimal saldoBloqueado, decimal aplicacoes, decimal resgates)
+        {
+            decimal disponivelResgate = saldoLiquido - saldoBloqueado + aplicacoes - resgates;
+
+            if (disponivelResgate < 0)
+            {
+                disponivelResgate = 0.0m;
+            }
+
+            return disponivelResgate;
+        }
+
         public static void GravaDadosDeEntrada(Saldo saldo, Fundos fundos, Bloqueios bloqueios)
         {
             Console.WriteLine("Cotação Mais Recente : " + fundos.CotacaoMaisRecente.ToString("N7", CultureInfo.InvariantCulture));
@@ -310,28 +322,32 @@ namespace Calculo_RV_CM.Utils
                 Utils.GravaRegistro(registro);
             }
         }
-        public static void GravaCertificados(Certificados certificados)
+
+        public static void GravaSaldoConsolidado(List<Certificados> certificados, Bloqueios bloqueios)
         {
-            string registro = ";" +
-                certificados.DataAplicacao + ";" +
-                certificados.SaldoCotasCertificado.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                certificados.CotacaoAplicacao.ToString("N7", new CultureInfo("pt-BR")) + ";" +
-                certificados.SaldoAmortizacaoDePrincipal.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                certificados.RendimentoPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                certificados.SaldoPrejuizo.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                certificados.CotasIsentaMaximo.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                certificados.CotasIsenta.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                certificados.CotasTributada.ToString("N5", new CultureInfo("pt-BR")) + ";" +
-                certificados.PrejuizoCompensado.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                certificados.PrejuizoACompensar.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                certificados.IRPorCota.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                certificados.CotaLiquidaTributada.ToString("N10", new CultureInfo("pt-BR")) + ";" +
-                certificados.ValorBruto.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                certificados.ValorIR.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                certificados.ValorLiquido.ToString("N2", new CultureInfo("pt-BR")) + ";" +
-                certificados.CustoAplicacao.ToString("N2", new CultureInfo("pt-BR"));
-            Utils.GravaRegistro(registro);
+            decimal custoAplicacao = certificados.Sum(x => x.CustoAplicacao);
+            decimal saldoBruto = certificados.Sum(x => x.ValorBruto);
+            decimal valorIR = certificados.Sum(x => x.ValorIR);
+            decimal saldoLiquido = certificados.Sum(x => x.ValorLiquido);
+            decimal saldoBloqueado = Utils.CalculaSaldoBloqueado(certificados, bloqueios.ValorBloqueadoTotal, bloqueios.CotasBloqueadasTotal);
+            decimal aplicacoes = 0.0m;
+            decimal resgates = 0.0m;
+            decimal disponivelResgate = Utils.CalculaDisponivelResgate(saldoLiquido, saldoBloqueado, aplicacoes, resgates);
+
+
+            Utils.GravaRegistro(" ");
+            Utils.GravaRegistro("*** Totais ***");
+            Utils.GravaRegistro("Custo da Aplicacao;" + custoAplicacao.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.GravaRegistro("Saldo Bruto;" + saldoBruto.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.GravaRegistro("IR;" + valorIR.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.GravaRegistro("Saldo Liquido;" + saldoLiquido.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.GravaRegistro("Saldo Bloqueado;" + saldoBloqueado.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.GravaRegistro("Aplicacoes;" + aplicacoes.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.GravaRegistro("Resgates;" + resgates.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.GravaRegistro("Disponivel para Resgate;" + disponivelResgate.ToString("N2", new CultureInfo("pr-BR")));
+
         }
+
         public static void GravaRegistro(string registro)
         {
             try

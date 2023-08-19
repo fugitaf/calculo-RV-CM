@@ -44,6 +44,11 @@ namespace Calculo_RV_CM
                             listAliquotasIR.Add(aliquotasIR);
                         }
 
+                        // O ultimo item da lista fica com o ano atual
+
+                        DateTime dateTime = DateTime.Now;
+                        listAliquotasIR[listAliquotasIR.Count - 1].Ano = int.Parse(dateTime.ToString("yyyy", CultureInfo.InvariantCulture));
+
                         Console.WriteLine("Aliquotas de IR do SLD");
                         foreach (AliquotasIR obj in listAliquotasIR)
                         {
@@ -149,26 +154,7 @@ namespace Calculo_RV_CM
 
             Utils.Utils.GravaCertificadosCalculados(listCert);
 
-            decimal custoAplicacao = listCert.Sum(x => x.CustoAplicacao);
-            decimal saldoBruto = listCert.Sum(x => x.ValorBruto);
-            decimal valorIR = listCert.Sum(x => x.ValorIR);
-            decimal saldoLiquido = listCert.Sum(x => x.ValorLiquido);
-            decimal saldoBloqueado = Utils.Utils.CalculaSaldoBloqueado(listCert, bloqueios.ValorBloqueadoTotal, bloqueios.CotasBloqueadasTotal);
-            decimal aplicacoes = 0.0m;
-            decimal resgates = 0.0m;
-            decimal disponivelResgate = saldoLiquido - saldoBloqueado + aplicacoes - resgates;
-
-
-            Utils.Utils.GravaRegistro(" ");
-            Utils.Utils.GravaRegistro("*** Totais ***");
-            Utils.Utils.GravaRegistro("Custo da Aplicacao;" + custoAplicacao.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Saldo Bruto;" + saldoBruto.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("IR;" + valorIR.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Saldo Liquido;" + saldoLiquido.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Saldo Bloqueado;" + saldoBloqueado.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Aplicacoes;" + aplicacoes.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Resgates;" + resgates.ToString("N2", new CultureInfo("pr-BR")));
-            Utils.Utils.GravaRegistro("Disponivel para Resgate;" + disponivelResgate.ToString("N2", new CultureInfo("pr-BR")));
+            Utils.Utils.GravaSaldoConsolidado(listCert, bloqueios);
 
         }
     }
