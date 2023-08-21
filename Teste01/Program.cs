@@ -10,8 +10,8 @@ namespace Calculo_RV_CM
             Saldo saldo = new Saldo();
             Bloqueios bloqueios = new Bloqueios();
             Fundos fundos = new Fundos();
-            List<AliquotasIR> listAliquotasIR = new List<AliquotasIR>();
-            List<Certificados> listCert = new List<Certificados>();
+            List<Certificado> listaCertificados = new List<Certificado>();
+            List<PosicaoAnalitica> listaPosicaoAnalitica = new List<PosicaoAnalitica>();
             string pathSld = @"C:\Users\fefug_skli85i\Documents\Temp\SLD.csv";
             string pathApl = @"C:\Users\fefug_skli85i\Documents\Temp\APL.csv";
             Console.WriteLine("------------------------------------------------------------------------");
@@ -41,16 +41,16 @@ namespace Calculo_RV_CM
                             aliquotasIR.Ano = int.Parse(fields[i], new CultureInfo("pt-BR"));
                             aliquotasIR.AliquotaIR = decimal.Parse(fields[i + 1], new CultureInfo("pt-BR"));
                             aliquotasIR.CotacaoFim = decimal.Parse(fields[i + 2], new CultureInfo("pr-BR"));
-                            listAliquotasIR.Add(aliquotasIR);
+                            saldo.AddAliquotaIR(aliquotasIR);
                         }
 
-                        // O ultimo item da lista fica com o ano atual
+                        // O ultimo item da lista de aliquota deve ficar com o ano atual
 
                         DateTime dateTime = DateTime.Now;
-                        listAliquotasIR[listAliquotasIR.Count - 1].Ano = int.Parse(dateTime.ToString("yyyy", CultureInfo.InvariantCulture));
+                        saldo.AliquotasIR[saldo.AliquotasIR.Count - 1].Ano = int.Parse(dateTime.ToString("yyyy", CultureInfo.InvariantCulture));
 
                         Console.WriteLine("Aliquotas de IR do SLD");
-                        foreach (AliquotasIR obj in listAliquotasIR)
+                        foreach (AliquotasIR obj in saldo.AliquotasIR)
                         {
                             Console.WriteLine(obj.Ano + "  " +
                                 obj.AliquotaIR.ToString("N2", CultureInfo.InvariantCulture) +
@@ -82,57 +82,12 @@ namespace Calculo_RV_CM
                         decimal saldoCotasCertificado = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
                         decimal cotacaoAplicacao = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
                         decimal saldoAmortizacaoDePrincipal = decimal.Parse(fields[3], new CultureInfo("pt-BR"));
-
-                        // Monta Lista de Periodos de Aliquotas de IR do Certificado
-
-                        List<AliquotasIR> ListAliquotasIRCertificado = listAliquotasIR.FindAll(x => x.Ano >= Utils.Utils.Ano(dataAplicacao));
-
-                        List<Periodos> listCalcPorPeriodo = new List<Periodos>();
-
-                        foreach (AliquotasIR Obj in ListAliquotasIRCertificado)
-                        {
-                            Periodos periodo = new Periodos();
-                            periodo.Ano = Obj.Ano;
-                            periodo.AliquotaIR = Obj.AliquotaIR;
-                            periodo.CotacaoInicio = 0.0m;
-                            periodo.SaldoAmortizacaoDePrincipalPorCota = 0.0m;
-                            periodo.CotacaoFim = Obj.CotacaoFim;
-                            periodo.RendimentoPorCota = 0.0m;
-                            periodo.PrejuizoACompensarPorCota = 0.0m;
-                            periodo.PrejuizoCompensadoPorCota = 0.0m;
-                            periodo.SaldoPrejuizoPorCota = 0.0m;
-                            periodo.BaseCalculoIRPorCota = 0.0m;
-                            periodo.IRPorCota = 0.0m;
-                            periodo.SaldoPrejuizo = 0.0m;
-                            listCalcPorPeriodo.Add(periodo);
-                        }
-
-                        // Calculos Por Periodo de Aliquotas de IR
-
-                        listCalcPorPeriodo = Utils.Utils.CalculoPorPeriodo(listCalcPorPeriodo, saldo.CustoMedio(), fundos.CotacaoMaisRecente, saldoCotasCertificado,
-                                                                            saldoAmortizacaoDePrincipal);
-
-                        // Monta Lista de Certificados
-
-                        Certificados certificado = new Certificados();
-                        certificado.DataAplicacao = dataAplicacao;
-                        certificado.SaldoCotasCertificado = saldoCotasCertificado;
-                        certificado.CotacaoAplicacao = cotacaoAplicacao;
-                        certificado.SaldoAmortizacaoDePrincipal = saldoAmortizacaoDePrincipal;
-                        certificado.RendimentoPorCota = listCalcPorPeriodo.Sum(x => x.RendimentoPorCota);
-                        certificado.SaldoPrejuizo = 0.0m;
-                        certificado.CotasIsentaMaximo = 0.0m;
-                        certificado.CotasIsenta = 0.0m;
-                        certificado.CotasTributada = 0.0m;
-                        certificado.PrejuizoCompensado = 0.0m;
-                        certificado.PrejuizoACompensar = listCalcPorPeriodo[listCalcPorPeriodo.Count - 1].SaldoPrejuizo;
-                        certificado.IRPorCota = listCalcPorPeriodo.Sum(x => x.IRPorCota);
-                        certificado.CotaLiquidaTributada = 0.0m;
-                        certificado.ValorBruto = 0.0m;
-                        certificado.ValorIR = 0.0m;
-                        certificado.ValorLiquido = 0.0m;
-                        certificado.PeriodoCalculado = listCalcPorPeriodo;
-                        listCert.Add(certificado);
+                        Certificado certificado = new Certificado();
+                        certificado.DataCotizacao = fields[0];
+                        certificado.SaldoCotasCertificado = decimal.Parse(fields[1], new CultureInfo("pt-BR"));
+                        certificado.CotacaoAplicacao = decimal.Parse(fields[2], new CultureInfo("pt-BR"));
+                        certificado.SaldoAmortizacaoDePrincipal = decimal.Parse(fields[3], new CultureInfo("pt-BR"));
+                        listaCertificados.Add(certificado);
                     }
                 }
             }
@@ -142,19 +97,19 @@ namespace Calculo_RV_CM
                 Console.WriteLine(e.Message);
             }
 
-            // Calculo por Certificado
+            // Calcula Posicao Analitica "por Certificado"
 
-            listCert = Utils.Utils.CalculoCertificado(listCert, saldo.SaldoPrejuizo, fundos.CotacaoMaisRecente);
+            listaPosicaoAnalitica = Utils.Utils.CalculaPosicaoAnalitica(listaCertificados, saldo, fundos);
 
             // Grava Informações
 
             Utils.Utils.GravaDadosDeEntrada(saldo, fundos, bloqueios);
 
-            Utils.Utils.GravaPeriodosDoCertificado(listCert);
+            Utils.Utils.GravaPeriodosDoCertificado(listaPosicaoAnalitica);
 
-            Utils.Utils.GravaCertificadosCalculados(listCert);
+            Utils.Utils.GravaCertificadosCalculados(listaPosicaoAnalitica);
 
-            Utils.Utils.GravaSaldoConsolidado(listCert, bloqueios);
+            Utils.Utils.GravaSaldoConsolidado(listaPosicaoAnalitica, bloqueios);
 
         }
     }

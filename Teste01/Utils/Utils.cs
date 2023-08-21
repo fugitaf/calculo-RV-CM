@@ -1,5 +1,6 @@
 ﻿using Calculo_RV_CM.Entities;
 using System.Globalization;
+using System.Runtime.ConstrainedExecution;
 
 namespace Calculo_RV_CM.Utils
 {
@@ -13,13 +14,59 @@ namespace Calculo_RV_CM.Utils
             return decimal.Round(valor, precisao, metodoTruncar);
         }
 
-        //
-        // Obtem o Ano de uma Data
-        //
-
-        public static int Ano(string data)
+        public static List<PosicaoAnalitica> CalculaPosicaoAnalitica(List<Certificado> certificados, Saldo saldo, Fundos fundos)
         {
-            return int.Parse(data.Substring(6));
+            List<PosicaoAnalitica> listaPosicaoAnalitica = new List<PosicaoAnalitica>();
+
+            foreach (Certificado Cert in certificados)
+            {
+                List<AliquotasIR> AliquotasIRDoCertificado = saldo.AliquotasIRDoCertificado(Cert.DataCotizacao);
+                List<Periodos> listaPeriodos = new List<Periodos>();
+
+                foreach (AliquotasIR Aliq in AliquotasIRDoCertificado)
+                {
+                    Periodos periodo = new Periodos();
+                    periodo.Ano = Aliq.Ano;
+                    periodo.AliquotaIR = Aliq.AliquotaIR;
+                    periodo.CotacaoInicio = 0.0m;
+                    periodo.SaldoAmortizacaoDePrincipalPorCota = 0.0m;
+                    periodo.CotacaoFim = Aliq.CotacaoFim;
+                    periodo.RendimentoPorCota = 0.0m;
+                    periodo.PrejuizoACompensarPorCota = 0.0m;
+                    periodo.PrejuizoCompensadoPorCota = 0.0m;
+                    periodo.SaldoPrejuizoPorCota = 0.0m;
+                    periodo.BaseCalculoIRPorCota = 0.0m;
+                    periodo.IRPorCota = 0.0m;
+                    periodo.SaldoPrejuizo = 0.0m;
+                    listaPeriodos.Add(periodo);
+                }
+
+                listaPeriodos = Utils.CalculoPorPeriodo(listaPeriodos, saldo.CustoMedio(), fundos.CotacaoMaisRecente, Cert.SaldoCotasCertificado,
+                                                        Cert.SaldoAmortizacaoDePrincipal);
+                PosicaoAnalitica posicaoAnalitica = new PosicaoAnalitica();
+                posicaoAnalitica.DataCotizacao = Cert.DataCotizacao;
+                posicaoAnalitica.SaldoCotasCertificado = Cert.SaldoCotasCertificado;
+                posicaoAnalitica.CotacaoAplicacao = Cert.CotacaoAplicacao;
+                posicaoAnalitica.SaldoAmortizacaoDePrincipal = Cert.SaldoAmortizacaoDePrincipal;
+                posicaoAnalitica.RendimentoPorCota = listaPeriodos.Sum(x => x.RendimentoPorCota);
+                posicaoAnalitica.SaldoPrejuizo = 0.0m;
+                posicaoAnalitica.CotasIsentaMaximo = 0.0m;
+                posicaoAnalitica.CotasIsenta = 0.0m;
+                posicaoAnalitica.CotasTributada = 0.0m;
+                posicaoAnalitica.PrejuizoCompensado = 0.0m;
+                posicaoAnalitica.PrejuizoACompensar = listaPeriodos[listaPeriodos.Count - 1].SaldoPrejuizo;
+                posicaoAnalitica.IRPorCota = listaPeriodos.Sum(x => x.IRPorCota);
+                posicaoAnalitica.CotaLiquidaTributada = 0.0m;
+                posicaoAnalitica.ValorBruto = 0.0m;
+                posicaoAnalitica.ValorIR = 0.0m;
+                posicaoAnalitica.ValorLiquido = 0.0m;
+                posicaoAnalitica.PeriodoCalculado = listaPeriodos;
+                listaPosicaoAnalitica.Add(posicaoAnalitica);
+            }
+
+            listaPosicaoAnalitica = Utils.CalculoCertificado(listaPosicaoAnalitica, saldo.SaldoPrejuizo, fundos.CotacaoMaisRecente);
+
+            return listaPosicaoAnalitica;
         }
 
         //
@@ -107,7 +154,7 @@ namespace Calculo_RV_CM.Utils
         //
         // Calculo do Certificado e Compensação de Prejuízo entre Certificados
         //
-        public static List<Certificados> CalculoCertificado(List<Certificados> certificados, decimal saldoPrejuizo, decimal cotacaoMaisRecente)
+        public static List<PosicaoAnalitica> CalculoCertificado(List<PosicaoAnalitica> certificados, decimal saldoPrejuizo, decimal cotacaoMaisRecente)
         {
             for (int i = 0; i < certificados.Count; i++)
             {
@@ -195,7 +242,7 @@ namespace Calculo_RV_CM.Utils
             }
             return certificados;
         }
-        public static decimal CalculaSaldoBloqueado(List<Certificados> certificados, decimal valorBloqueado, decimal cotasBloqueadas)
+        public static decimal CalculaSaldoBloqueado(List<PosicaoAnalitica> certificados, decimal valorBloqueado, decimal cotasBloqueadas)
         {
             decimal saldoBloqueado = 0.0m;
             decimal cotasLivres = 0.0m;
@@ -229,7 +276,7 @@ namespace Calculo_RV_CM.Utils
             return saldoBloqueado;
         }
 
-        public static decimal CalculaDisponivelResgate (decimal saldoLiquido, decimal saldoBloqueado, decimal aplicacoes, decimal resgates)
+        public static decimal CalculaDisponivelResgate(decimal saldoLiquido, decimal saldoBloqueado, decimal aplicacoes, decimal resgates)
         {
             decimal disponivelResgate = saldoLiquido - saldoBloqueado + aplicacoes - resgates;
 
@@ -257,7 +304,7 @@ namespace Calculo_RV_CM.Utils
             Utils.GravaRegistro("Cotas Bloqueadas;" + bloqueios.CotasBloqueadasTotal.ToString("N5", new CultureInfo("pr-BR")));
         }
 
-        public static void GravaPeriodosDoCertificado(List<Certificados> certificado)
+        public static void GravaPeriodosDoCertificado(List<PosicaoAnalitica> certificado)
         {
             Utils.GravaRegistro(" ");
             string registro = "*** Periodos ***; Data_Aplicacao;" + "Ano;" + "Aliquota_Ir;" +
@@ -265,12 +312,12 @@ namespace Calculo_RV_CM.Utils
                 "Prejuizo_Compensado;" + "Saldo_Prejuizo_Por_Cota;" + "Base_Calc_IR_Por_Cota;" + "IR_Por_Cota;" + "Saldo_Prejuizo";
             Utils.GravaRegistro(registro);
 
-            foreach (Certificados obj in certificado)
+            foreach (PosicaoAnalitica obj in certificado)
             {
                 foreach (Periodos obj2 in obj.PeriodoCalculado)
                 {
                     registro = ";" +
-                               obj.DataAplicacao + ";" +
+                               obj.DataCotizacao + ";" +
                                obj2.Ano + ";" +
                                obj2.AliquotaIR.ToString("N2", new CultureInfo("pt-BR")) + ";" +
                                obj2.SaldoAmortizacaoDePrincipalPorCota.ToString("N11", new CultureInfo("pt-BR")) + ";" +
@@ -289,7 +336,7 @@ namespace Calculo_RV_CM.Utils
             }
 
         }
-        public static void GravaCertificadosCalculados(List<Certificados> certificados)
+        public static void GravaCertificadosCalculados(List<PosicaoAnalitica> certificados)
         {
             Utils.GravaRegistro(" ");
             string registro = "*** Certificados ***;" + "Data_Aplicacao;" + "Saldo_Cotas;" + "Cotacao_Aplicacao;" +
@@ -299,10 +346,10 @@ namespace Calculo_RV_CM.Utils
                 "Valor_Bruto;" + "Valor_IR;" + "Valor_Liquido;" + "Custo_Aplicacao";
             Utils.GravaRegistro(registro);
 
-            foreach (Certificados obj in certificados)
+            foreach (PosicaoAnalitica obj in certificados)
             {
                 registro = ";" +
-                           obj.DataAplicacao + ";" +
+                           obj.DataCotizacao + ";" +
                            obj.SaldoCotasCertificado.ToString("N5", new CultureInfo("pt-BR")) + ";" +
                            obj.CotacaoAplicacao.ToString("N7", new CultureInfo("pt-BR")) + ";" +
                            obj.SaldoAmortizacaoDePrincipal.ToString("N2", new CultureInfo("pt-BR")) + ";" +
@@ -323,7 +370,7 @@ namespace Calculo_RV_CM.Utils
             }
         }
 
-        public static void GravaSaldoConsolidado(List<Certificados> certificados, Bloqueios bloqueios)
+        public static void GravaSaldoConsolidado(List<PosicaoAnalitica> certificados, Bloqueios bloqueios)
         {
             decimal custoAplicacao = certificados.Sum(x => x.CustoAplicacao);
             decimal saldoBruto = certificados.Sum(x => x.ValorBruto);

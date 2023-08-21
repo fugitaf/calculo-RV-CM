@@ -1,8 +1,8 @@
 ﻿namespace Calculo_RV_CM.Entities
 {
-    public class Certificados
+    public class PosicaoAnalitica
     {
-        public string DataAplicacao { get; set; }
+        public string DataCotizacao { get; set; }
         public decimal SaldoCotasCertificado { get; set; }
         public decimal CotacaoAplicacao { get; set; }
         public decimal SaldoAmortizacaoDePrincipal { get; set; }
@@ -19,6 +19,6 @@
         public decimal ValorIR { get; set; }
         public decimal ValorLiquido { get; set; }
         public decimal CustoAplicacao { get; set; }
-        public List<Periodos> PeriodoCalculado { get; set; }
+        public List<Periodos> PeriodoCalculado { get; set; } = new List<Periodos>();
     }
 }
