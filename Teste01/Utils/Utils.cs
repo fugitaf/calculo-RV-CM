@@ -154,9 +154,9 @@ namespace Calculo_RV_CM.Utils
         //
         // Calculo do Certificado e Compensação de Prejuízo entre Certificados
         //
-        public static List<PosicaoAnalitica> CalculoCertificado(List<PosicaoAnalitica> certificados, decimal saldoPrejuizo, decimal cotacaoMaisRecente)
+        public static List<PosicaoAnalitica> CalculoCertificado(List<PosicaoAnalitica> posicaoAnalitica, decimal saldoPrejuizo, decimal cotacaoMaisRecente)
         {
-            for (int i = 0; i < certificados.Count; i++)
+            for (int i = 0; i < posicaoAnalitica.Count; i++)
             {
                 decimal cotasPrejuizoMaximo = 0.0m;
                 decimal cotasPrejuizoMaximoAjuste = 0.0m;
@@ -164,83 +164,83 @@ namespace Calculo_RV_CM.Utils
 
                 // Soma Prejuizo a Compensar do Certificado no Saldo Prejuízo Total
 
-                saldoPrejuizo += certificados[i].PrejuizoACompensar;
+                saldoPrejuizo += posicaoAnalitica[i].PrejuizoACompensar;
 
                 // Calcula quantidade maxima de cotas para compensar o Saldo de Prejuízo
 
-                if (certificados[i].RendimentoPorCota > 0 && saldoPrejuizo > 0)
+                if (posicaoAnalitica[i].RendimentoPorCota > 0 && saldoPrejuizo > 0)
                 {
-                    cotasPrejuizoMaximo = Utils.TruncarValor(saldoPrejuizo / certificados[i].RendimentoPorCota, 5);
-                    ValorPrejuizoMaximo = Utils.TruncarValor(cotasPrejuizoMaximo * certificados[i].RendimentoPorCota, 2);
+                    cotasPrejuizoMaximo = Utils.TruncarValor(saldoPrejuizo / posicaoAnalitica[i].RendimentoPorCota, 5);
+                    ValorPrejuizoMaximo = Utils.TruncarValor(cotasPrejuizoMaximo * posicaoAnalitica[i].RendimentoPorCota, 2);
                     if (saldoPrejuizo == ValorPrejuizoMaximo)
                     {
-                        certificados[i].CotasIsentaMaximo = cotasPrejuizoMaximo;
+                        posicaoAnalitica[i].CotasIsentaMaximo = cotasPrejuizoMaximo;
                     }
                     else
                     {
                         cotasPrejuizoMaximoAjuste = cotasPrejuizoMaximo + 0.00001m;
-                        ValorPrejuizoMaximo = Utils.TruncarValor(cotasPrejuizoMaximoAjuste * certificados[i].RendimentoPorCota, 2);
+                        ValorPrejuizoMaximo = Utils.TruncarValor(cotasPrejuizoMaximoAjuste * posicaoAnalitica[i].RendimentoPorCota, 2);
                         if (saldoPrejuizo == ValorPrejuizoMaximo)
                         {
-                            certificados[i].CotasIsentaMaximo = cotasPrejuizoMaximoAjuste;
+                            posicaoAnalitica[i].CotasIsentaMaximo = cotasPrejuizoMaximoAjuste;
                         }
                         else
                         {
-                            certificados[i].CotasIsentaMaximo = cotasPrejuizoMaximo;
+                            posicaoAnalitica[i].CotasIsentaMaximo = cotasPrejuizoMaximo;
                         }
                     }
                 }
                 else
                 {
-                    certificados[i].CotasIsentaMaximo = 0.0m;
+                    posicaoAnalitica[i].CotasIsentaMaximo = 0.0m;
                 }
 
                 // Calcula Quantidade de Cotas Isentas
 
-                if (certificados[i].CotasIsentaMaximo > certificados[i].SaldoCotasCertificado)
+                if (posicaoAnalitica[i].CotasIsentaMaximo > posicaoAnalitica[i].SaldoCotasCertificado)
                 {
-                    certificados[i].CotasIsenta = certificados[i].SaldoCotasCertificado;
+                    posicaoAnalitica[i].CotasIsenta = posicaoAnalitica[i].SaldoCotasCertificado;
                 }
                 else
                 {
-                    certificados[i].CotasIsenta = certificados[i].CotasIsentaMaximo;
+                    posicaoAnalitica[i].CotasIsenta = posicaoAnalitica[i].CotasIsentaMaximo;
                 }
 
                 // Calcula Quantidade de Cotas Tributadas
 
-                certificados[i].CotasTributada = certificados[i].SaldoCotasCertificado - certificados[i].CotasIsenta;
+                posicaoAnalitica[i].CotasTributada = posicaoAnalitica[i].SaldoCotasCertificado - posicaoAnalitica[i].CotasIsenta;
 
                 // Calcula Prejuizo Compensado
 
-                certificados[i].PrejuizoCompensado = Utils.TruncarValor(certificados[i].CotasIsenta * certificados[i].RendimentoPorCota, 2);
+                posicaoAnalitica[i].PrejuizoCompensado = Utils.TruncarValor(posicaoAnalitica[i].CotasIsenta * posicaoAnalitica[i].RendimentoPorCota, 2);
 
                 // Calcula Novo Saldo de Prejuízo
 
-                saldoPrejuizo -= certificados[i].PrejuizoCompensado;
-                certificados[i].SaldoPrejuizo = saldoPrejuizo;
+                saldoPrejuizo -= posicaoAnalitica[i].PrejuizoCompensado;
+                posicaoAnalitica[i].SaldoPrejuizo = saldoPrejuizo;
 
                 // Calcula Cota Liquida Tributada
 
-                certificados[i].CotaLiquidaTributada = cotacaoMaisRecente - certificados[i].IRPorCota;
+                posicaoAnalitica[i].CotaLiquidaTributada = cotacaoMaisRecente - posicaoAnalitica[i].IRPorCota;
 
                 // Calcula Valor Bruto
 
-                certificados[i].ValorBruto = Utils.TruncarValor(certificados[i].SaldoCotasCertificado * cotacaoMaisRecente, 2);
+                posicaoAnalitica[i].ValorBruto = Utils.TruncarValor(posicaoAnalitica[i].SaldoCotasCertificado * cotacaoMaisRecente, 2);
 
                 // Calcula o Valor do IR
 
-                certificados[i].ValorIR = Utils.TruncarValor(certificados[i].CotasTributada * certificados[i].IRPorCota, 2);
+                posicaoAnalitica[i].ValorIR = Utils.TruncarValor(posicaoAnalitica[i].CotasTributada * posicaoAnalitica[i].IRPorCota, 2);
 
                 // Calcula Valor Liquido
 
-                certificados[i].ValorLiquido = certificados[i].ValorBruto - certificados[i].ValorIR;
+                posicaoAnalitica[i].ValorLiquido = posicaoAnalitica[i].ValorBruto - posicaoAnalitica[i].ValorIR;
 
                 // Calcula Custo da Aplicacao
 
-                certificados[i].CustoAplicacao = Utils.TruncarValor(certificados[i].SaldoCotasCertificado * certificados[i].CotacaoAplicacao, 2);
+                posicaoAnalitica[i].CustoAplicacao = Utils.TruncarValor(posicaoAnalitica[i].SaldoCotasCertificado * posicaoAnalitica[i].CotacaoAplicacao, 2);
 
             }
-            return certificados;
+            return posicaoAnalitica;
         }
         public static decimal CalculaSaldoBloqueado(List<PosicaoAnalitica> certificados, decimal valorBloqueado, decimal cotasBloqueadas)
         {
