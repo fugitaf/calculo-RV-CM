@@ -229,7 +229,12 @@ namespace Calculo_RV_CM.Utils
 
                 // Calcula o Valor do IR
 
-                posicaoAnalitica[i].ValorIR = Utils.TruncarValor(posicaoAnalitica[i].CotasTributada * posicaoAnalitica[i].IRPorCota, 2);
+                posicaoAnalitica[i].ValorIR = 0.0m;
+
+                foreach (Periodos periodos in posicaoAnalitica[i].PeriodoCalculado)
+                {
+                    posicaoAnalitica[i].ValorIR += Utils.TruncarValor(posicaoAnalitica[i].CotasTributada * periodos.IRPorCota, 2);
+                }
 
                 // Calcula Valor Liquido
 
