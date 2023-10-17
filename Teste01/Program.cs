@@ -34,8 +34,10 @@ namespace Calculo_RV_CM
                         saldo.SaldoPrejuizo = decimal.Parse(fields[3], new CultureInfo("pt-BR"));
                         bloqueios.ValorBloqueadoTotal = decimal.Parse(fields[4], new CultureInfo("pt-BR"));
                         bloqueios.CotasBloqueadasTotal = decimal.Parse(fields[5], new CultureInfo("pt-BR"));
+                        bloqueios.BloqueioSubconta = fields[6];
 
-                        for (int i = 6; i <= 21 && int.Parse(fields[i]) > 0; i += 3)
+
+                        for (int i = 7; i <= 22 && int.Parse(fields[i]) > 0; i += 3)
                         {
                             AliquotasIR aliquotasIR = new AliquotasIR();
                             aliquotasIR.Ano = int.Parse(fields[i], new CultureInfo("pt-BR"));

@@ -10,6 +10,7 @@ namespace Calculo_RV_CM.Entities
     {
         public decimal ValorBloqueadoTotal { get; set; }
         public decimal CotasBloqueadasTotal { get; set; }
+        public string BloqueioSubconta { get; set; }
 
         public Bloqueios() { }
 

@@ -293,6 +293,32 @@ namespace Calculo_RV_CM.Utils
             return disponivelResgate;
         }
 
+        public static decimal CalcularBloqueioSubconta(string bloqueioSubconta, decimal disponivelResgate, decimal saldoBloqueado)
+        {
+            decimal saldoBloqueadoTotal = saldoBloqueado;
+
+            if (bloqueioSubconta == "SIM")
+            {
+                saldoBloqueadoTotal += disponivelResgate;
+            }
+
+            return saldoBloqueadoTotal;
+        }
+
+        public static decimal CaluclarAjusteSaldoDisponivel(decimal saldoDisponivel, string bloqueioSubconta)
+        {
+            // Vamos ter outros ajustes, por exemplo se tiver resgate total o disponível sera sempre zerado
+
+            decimal saldoDisponivelAjustado = saldoDisponivel;
+
+            if (bloqueioSubconta == "SIM")
+            {
+                saldoDisponivelAjustado = 0;
+            }
+
+            return saldoDisponivelAjustado;
+        }
+
         public static void GravaDadosDeEntrada(Saldo saldo, Fundos fundos, Bloqueios bloqueios)
         {
             Console.WriteLine("Cotação Mais Recente : " + fundos.CotacaoMaisRecente.ToString("N7", CultureInfo.InvariantCulture));
@@ -385,6 +411,8 @@ namespace Calculo_RV_CM.Utils
             decimal aplicacoes = 0.0m;
             decimal resgates = 0.0m;
             decimal disponivelResgate = Utils.CalculaDisponivelResgate(saldoLiquido, saldoBloqueado, aplicacoes, resgates);
+            saldoBloqueado = Utils.CalcularBloqueioSubconta(bloqueios.BloqueioSubconta, disponivelResgate, saldoBloqueado);
+            disponivelResgate = Utils.CaluclarAjusteSaldoDisponivel(disponivelResgate, bloqueios.BloqueioSubconta);
 
 
             Utils.GravaRegistro(" ");
