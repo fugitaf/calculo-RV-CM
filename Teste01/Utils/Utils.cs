@@ -305,7 +305,7 @@ namespace Calculo_RV_CM.Utils
             return saldoBloqueadoTotal;
         }
 
-        public static decimal CaluclarAjusteSaldoDisponivel(decimal saldoDisponivel, string bloqueioSubconta)
+        public static decimal CalcularAjusteSaldoDisponivel(decimal saldoDisponivel, string bloqueioSubconta)
         {
             // Vamos ter outros ajustes, por exemplo se tiver resgate total o disponível sera sempre zerado
 
@@ -412,7 +412,7 @@ namespace Calculo_RV_CM.Utils
             decimal resgates = 0.0m;
             decimal disponivelResgate = Utils.CalculaDisponivelResgate(saldoLiquido, saldoBloqueado, aplicacoes, resgates);
             saldoBloqueado = Utils.CalcularBloqueioSubconta(bloqueios.BloqueioSubconta, disponivelResgate, saldoBloqueado);
-            disponivelResgate = Utils.CaluclarAjusteSaldoDisponivel(disponivelResgate, bloqueios.BloqueioSubconta);
+            disponivelResgate = Utils.CalcularAjusteSaldoDisponivel(disponivelResgate, bloqueios.BloqueioSubconta);
 
 
             Utils.GravaRegistro(" ");
