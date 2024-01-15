@@ -230,10 +230,12 @@ namespace Calculo_RV_CM.Utils
                 // Calcula o Valor do IR
 
                 posicaoAnalitica[i].ValorIR = 0.0m;
+                decimal valorBaseIR5Decimais = 0.0m;
 
                 foreach (Periodos periodos in posicaoAnalitica[i].PeriodoCalculado)
                 {
-                    posicaoAnalitica[i].ValorIR += Utils.TruncarValor(posicaoAnalitica[i].CotasTributada * periodos.IRPorCota, 2);
+                    valorBaseIR5Decimais = Utils.TruncarValor(posicaoAnalitica[i].CotasTributada * periodos.BaseCalculoIRPorCota, 5);
+                    posicaoAnalitica[i].ValorIR += Utils.TruncarValor(valorBaseIR5Decimais * periodos.AliquotaIR, 2);
                 }
 
                 // Calcula Valor Liquido
